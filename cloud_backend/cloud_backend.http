@@ -1,0 +1,6 @@
+@cloud_backend_HostAddress = http://localhost:5212
+
+GET {{cloud_backend_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
