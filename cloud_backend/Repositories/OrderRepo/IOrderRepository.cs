@@ -11,6 +11,8 @@ namespace cloud_backend.Repositories.OrderRepo
         Task<IEnumerable<GetOrdersDto?>> GetAllOrdersDto();
         Task<GetOrdersDto?> GetOrderDtoById(Guid orderId);
         Task<IEnumerable<GetOrdersDto?>> GetUserOrdersDto(Guid credentialId);
+        Task<IEnumerable<Orders?>> GetDailyOrders();
+        Task<IEnumerable<Orders?>> GetWeeklyOrders();
         Task<CreateOrderResult?> CreateOrderAsync(CreateOrderRequest request);
         Task<bool> UpdateOrderStatusAsync(Guid orderId, int status);
     }

@@ -157,6 +157,26 @@ namespace cloud_backend.Repositories.OrderRepo
                 .FirstOrDefaultAsync();
         }
 
+        public async Task<IEnumerable<Orders?>> GetDailyOrders()
+        {
+            DateTime today = DateTime.Today;
+            int diff = (7 + (today.DayOfWeek - DayOfWeek.Monday)) % 7;
+            DateTime weekStart = today.AddDays(-1 * diff).Date;
+            DateTime weekEnd = weekStart.AddDays(7).Date;
+            return await _context.Orders.Where(o => o.createdAt >= weekStart && o.createdAt < weekEnd).ToListAsync();
+        }
+
+        public async Task<IEnumerable<Orders?>> GetWeeklyOrders()
+        {
+            var today = DateTime.Today;
+            var firstDayOfMonth = new DateTime(today.Year, today.Month, 1);
+            var firstDayNextMonth = firstDayOfMonth.AddMonths(1);
+
+            return await _context.Orders
+            .Where(o => o.createdAt >= firstDayOfMonth && o.createdAt < firstDayNextMonth)
+            .ToListAsync();
+        }
+
         public async Task<CreateOrderResult?> CreateOrderAsync(CreateOrderRequest request)
         {
             // Validate product availability
