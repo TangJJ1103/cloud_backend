@@ -4,6 +4,7 @@ using System.Text.Json.Serialization;
 
 namespace cloud_backend.Models
 {
+    [Table("customer_user")]
     public class Customer_User
     {
         [Key] public Guid customerId { get; set; }

@@ -4,6 +4,7 @@ using System.Text.Json.Serialization;
 
 namespace cloud_backend.Models
 {
+    [Table("quotation_request_items")]
     public class Quotation_Request_Items
     {
         [Key]
@@ -16,7 +17,7 @@ namespace cloud_backend.Models
 
         public double unitPrice { get; set; }
         public int quantity { get; set; }
-        public int discountPercentage { get; set; }
+        public int? discountPercentage { get; set; }
 
         [ForeignKey(nameof(productId))]
         public virtual Products? Products { get; set; }

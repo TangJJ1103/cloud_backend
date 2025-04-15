@@ -4,6 +4,7 @@ using System.Text.Json.Serialization;
 
 namespace cloud_backend.Models
 {
+    [Table("receipts")]
     public class Receipts
     {
         [Key] public Guid receiptId { get; set; }
@@ -14,7 +15,7 @@ namespace cloud_backend.Models
 
         public double amount { get; set; }
         public int paymentMethod { get; set; }
-        public int paymentType { get; set; }
+        public int? paymentType { get; set; }
         public DateTime createdAt { get; set; }
 
         [ForeignKey(nameof(credentialId))]

@@ -6,7 +6,7 @@ namespace cloud_backend.Dto
     {
         public Guid quotationId { get; set; }
         public Guid storeId { get; set; }
-        public Guid orderId { get; set; }
+        public Guid? orderId { get; set; }
         public int status { get; set; }
         public int discountPercentage { get; set; }
         public double totalAmount { get; set; }

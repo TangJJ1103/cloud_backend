@@ -5,6 +5,7 @@ using System.Text.Json.Serialization;
 
 namespace cloud_backend.Models
 {
+    [Table("manufacturing_request")]
     public class Manufacturing_Request
     {
         [Key] public Guid requestId { get; set; }
@@ -13,7 +14,7 @@ namespace cloud_backend.Models
 
         public int quantity { get; set; }
         public double cost { get; set; }
-        public DateTime? createdAt { get; set; }
+        public DateTime createdAt { get; set; }
         public DateTime? updatedAt { get; set; }
         public int status { get; set; }
 

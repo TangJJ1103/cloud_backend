@@ -1,8 +1,10 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 
 namespace cloud_backend.Models
 {
+    [Table("products")]
     public class Products
     {
         [Key] public Guid productId { get; set; }
@@ -11,12 +13,12 @@ namespace cloud_backend.Models
         public double price { get; set; }
         public int stockQuantity { get; set; }
         public string? description { get; set; }
-        public string model { get; set; }
+        public string? model { get; set; }
         public string category { get; set; }
-        public bool isActive { get; set; }
         public int discountPercentage { get; set; }
+        public bool isActive { get; set; }
         public int soldQuantity { get; set; }
-        public DateTime? createdAt { get; set; }
+        public DateTime createdAt { get; set; }
         public DateTime? updatedAt { get; set; }
 
         [JsonIgnore]

@@ -95,12 +95,12 @@ namespace cloud_backend.Controllers
 
             // Fetch orders for this week
             var ordersThisWeek = (await _orderRepo.GetAllOrdersDto())
-                .Where(o => o.createdAt.Value.Date >= startOfWeek && o.createdAt.Value.Date <= endOfWeek)
+                .Where(o => o.createdAt.Date >= startOfWeek && o.createdAt.Date <= endOfWeek)
                 .ToList();
 
             // Fetch manufacturing requests with status == 3 for this week
             var requestsThisWeek = (await _manufacturingRequestRepo.GetManufacturingRequests())
-                .Where(m => m.createdAt.Value.Date >= startOfWeek && m.createdAt.Value.Date <= endOfWeek && m.status == 3)
+                .Where(m => m.createdAt.Date >= startOfWeek && m.createdAt.Date <= endOfWeek && m.status == 3)
                 .ToList();
 
             var result = new List<object>();
@@ -110,11 +110,11 @@ namespace cloud_backend.Controllers
                 var date = startOfWeek.AddDays(i);
 
                 var revenue = ordersThisWeek
-                    .Where(o => o.createdAt.Value.Date == date)
+                    .Where(o => o.createdAt.Date == date)
                     .Sum(o => o.amount);
 
                 var expenses = requestsThisWeek
-                    .Where(m => m.createdAt.Value.Date == date)
+                    .Where(m => m.createdAt.Date == date)
                     .Sum(m => m.cost * m.quantity);
 
                 result.Add(new
@@ -164,7 +164,7 @@ namespace cloud_backend.Controllers
 
             // 3. Group orders by date
             var groupedOrders = orders
-                .GroupBy(o => o.createdAt.Value.Date)
+                .GroupBy(o => o.createdAt.Date)
                 .ToDictionary(
                     g => g.Key,
                     g => new
@@ -208,7 +208,7 @@ namespace cloud_backend.Controllers
             var result = orders
                 .GroupBy(o =>
                 {
-                    var weekNumber = ((o.createdAt.Value.Day - 1) / 7) + 1;
+                    var weekNumber = ((o.createdAt.Day - 1) / 7) + 1;
                     return $"Week {weekNumber}";
                 })
                 .OrderBy(g => g.Key)
@@ -225,7 +225,7 @@ namespace cloud_backend.Controllers
             return Ok(result);
         }
 
-        [Authorize]
+        
         [HttpGet("monthlyUserData")]
         public async Task<ActionResult> GetMonthlyUserData()
         {
@@ -244,15 +244,10 @@ namespace cloud_backend.Controllers
                 .Where(s => s.createdAt.Year == currentYear && s.isActive)
                 .ToList();
 
-            var admin = staff.Where(s => s.role == 4).ToList();
-            var superAdmin = staff.Where(s => s.role == 5).ToList();
+            var admin = staff.Where(s => s.role == 2).ToList();
+            var superAdmin = staff.Where(s => s.role == 1).ToList();
 
-            // Combine all users into a single collection
-            var allUsers = customers
-                .Select(c => new { c.createdAt, userRole = "Customer" })
-                .Concat(staff.Select(s => new { s.createdAt, userRole = s.role == 4 ? "Admin" : s.role == 5 ? "SuperAdmin" : "Staff" }))
-                .Concat(store.Select(s => new { s.createdAt, userRole = "Store" }))
-                .ToList();
+            Console.WriteLine("Super Admin Count1: " + superAdmin.Count());
 
             var monthNames = Enumerable.Range(1, 12)
                 .Select(i => new DateTime(currentYear, i, 1).ToString("MMM"))
@@ -263,17 +258,29 @@ namespace cloud_backend.Controllers
                 var monthNumber = index + 1;
 
                 // Filter the users based on the month
-                var usersInMonth = allUsers
+                var customersInMonth = customers
                     .Where(u => u.createdAt.Month == monthNumber);
 
+                var staffInMonth = staff
+                    .Where(u => u.createdAt.Month == monthNumber);
+
+                var storeInMonth = store
+                    .Where(u => u.createdAt.Month == monthNumber);
+
+                var adminInMonth = admin
+                    .Where(u => u.createdAt.Month == monthNumber);
+
+                var superAdminInMonth = superAdmin
+                    .Where(u => u.createdAt.Month == monthNumber);
+                Console.WriteLine("Super Admin Count2: " + superAdminInMonth.Count());
                 return new
                 {
                     xAxis = monthName,
-                    SuperAdmin = usersInMonth.Count(u => u.userRole == "SuperAdmin"),
-                    Admin = usersInMonth.Count(u => u.userRole == "Admin"),
-                    Staff = usersInMonth.Count(u => u.userRole == "Staff"),
-                    Store = usersInMonth.Count(u => u.userRole == "Store"),
-                    Customer = usersInMonth.Count(u => u.userRole == "Customer")
+                    SuperAdmin = superAdminInMonth.Count(),
+                    Admin = adminInMonth.Count(),
+                    Staff = staffInMonth.Count(u => u.role == 3),
+                    Store = storeInMonth.Count(),
+                    Customer = customersInMonth.Count()
                 };
             }).ToList();
 

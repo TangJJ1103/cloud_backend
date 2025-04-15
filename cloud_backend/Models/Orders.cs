@@ -5,6 +5,7 @@ using System.Text.Json.Serialization;
 
 namespace cloud_backend.Models
 {
+    [Table("orders")]
     public class Orders
     {
         [Key] public Guid orderId { get; set; }
@@ -13,8 +14,8 @@ namespace cloud_backend.Models
 
         public int quantity { get; set; }
         public double amount { get; set; }
-        public int discountPercentage { get; set; }
-        public DateTime? createdAt { get; set; }
+        public int? discountPercentage { get; set; }
+        public DateTime createdAt { get; set; }
         public DateTime? updatedAt { get; set; }
         public DateTime? fulfilledAt { get; set; }
         public int status { get; set; }

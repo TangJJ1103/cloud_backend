@@ -82,6 +82,12 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    db.Database.Migrate(); // applies migrations to AWS DB
+}
+
 app.UseCors("AllowReactApp");
 
 // Configure the HTTP request pipeline.

@@ -1,7 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace cloud_backend.Models
 {
+    [Table("user_credentials")]
     public class User_Credentials
     {
         [Key] public Guid credentialId { get; set; }

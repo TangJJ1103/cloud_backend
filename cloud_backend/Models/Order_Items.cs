@@ -5,6 +5,7 @@ using System.Text.Json.Serialization;
 
 namespace cloud_backend.Models
 {
+    [Table("order_items")]
     public class Order_Items
     {
         [Key] public Guid orderItemId { get; set; }
@@ -15,7 +16,7 @@ namespace cloud_backend.Models
         
         public int quantity { get; set; }
         public double unitPrice { get; set; }
-        public int discountPercentage { get; set; }
+        public int? discountPercentage { get; set; }
 
         [ForeignKey(nameof(orderId))]
         [JsonIgnore]

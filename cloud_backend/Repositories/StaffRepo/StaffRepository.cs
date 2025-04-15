@@ -24,7 +24,8 @@ namespace cloud_backend.Repositories.StaffRepo
                     email = c.User_Credential.email,
                     contactNumber = c.User_Credential.contactNumber,
                     role = c.User_Credential.role,
-                    isActive = c.isActive
+                    isActive = c.isActive,
+                    createdAt = (DateTime)c.createdAt
                 })
                 .ToListAsync();
         }

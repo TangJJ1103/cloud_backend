@@ -4,6 +4,7 @@ using System.Text.Json.Serialization;
 
 namespace cloud_backend.Models
 {
+    [Table("quotation_items")]
     public class Quotation_Items
     {
         [Key] public Guid quotationItemId { get; set; }

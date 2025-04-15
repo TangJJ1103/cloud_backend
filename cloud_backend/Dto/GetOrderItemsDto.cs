@@ -10,7 +10,7 @@ namespace cloud_backend.Dto
         public Guid productId { get; set; }
         public int quantity { get; set; }
         public double unitPrice { get; set; }
-        public int discountPercentage { get; set; }
+        public int? discountPercentage { get; set; }
         public GetProductsDto product { get; set; }
     }
 }

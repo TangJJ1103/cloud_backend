@@ -4,13 +4,13 @@ using System.Text.Json.Serialization;
 
 namespace cloud_backend.Models
 {
+    [Table("quotations")]
     public class Quotations
     {
         [Key] public Guid quotationId { get; set; }
         [Required]
         public Guid storeId { get; set; }
-        [Required]
-        public Guid orderId { get; set; }
+        public Guid? orderId { get; set; }
 
         public int status { get; set; }
         public int discountPercentage { get; set; }
