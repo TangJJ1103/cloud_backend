@@ -1,4 +1,5 @@
 ﻿using cloud_backend.Data;
+using cloud_backend.Dto;
 using cloud_backend.Models;
 using cloud_backend.Request.Customer;
 
@@ -29,6 +30,55 @@ namespace cloud_backend.Repositories.CustomerRepo
                     isVerified = c.isVerified
                 })
                 .ToListAsync();
+        }
+
+        public async Task<GetPaginatedDto<CustomerFindRequest>> GetAllCustomersPaginated(CustomerPaginationRequest request)
+        {
+            var query = _context.Customer_User
+            .Include(c => c.User_Credential)
+            .AsQueryable();
+
+            // Filtering
+            if (request.isVerified.HasValue)
+                query = query.Where(c => c.isVerified == request.isVerified.Value);
+
+            // Search (e.g., by name or email)
+            if (!string.IsNullOrWhiteSpace(request.searchTerm))
+            {
+                string term = request.searchTerm.ToLower();
+                query = query.Where(c =>
+                    c.User_Credential.name.ToLower().Contains(term) ||
+                    c.User_Credential.email.ToLower().Contains(term) || 
+                    c.credentialId.ToString().ToLower().Contains(term) ||
+                    c.customerId.ToString().ToLower().Contains(term));
+            }
+
+            // Total count for pagination
+            var totalCount = await query.CountAsync();
+
+            // Apply pagination
+            var data = await query
+                .OrderByDescending(c => c.createdAt)
+                .Skip(request.currentIndex)
+                .Take(request.offset)
+                .Select(c => new CustomerFindRequest
+                {
+                    customerId = c.customerId,
+                    username = c.User_Credential.username,
+                    name = c.User_Credential.name,
+                    email = c.User_Credential.email,
+                    contactNumber = c.User_Credential.contactNumber,
+                    address = c.address,
+                    createdAt = c.createdAt,
+                    isVerified = c.isVerified
+                })
+                .ToListAsync();
+
+            return new GetPaginatedDto<CustomerFindRequest>
+            {
+                data = data,
+                total = totalCount
+            };
         }
 
         public async Task<CustomerFindRequest?> GetCustomerById(Guid customerId)
@@ -65,47 +115,6 @@ namespace cloud_backend.Repositories.CustomerRepo
                     isVerified = c.isVerified
                 })
                 .FirstOrDefaultAsync();
-        }
-
-        public async Task<(IEnumerable<object> customers, int totalRecords)> FindCustomers(CustomerPaginationRequest request)
-        {
-            var query = _context.Customer_User.Include(c => c.User_Credential).AsQueryable();
-
-            if (request.isVerified.HasValue)
-            {
-                query = query.Where(c => c.isVerified == request.isVerified.Value);
-            }
-
-            if (!string.IsNullOrEmpty(request.filterBy))
-            {
-                query = request.filterBy.ToLower() switch
-                {
-                    "name" => query.OrderBy(c => c.User_Credential.name),
-                    "email" => query.OrderBy(c => c.User_Credential.email),
-                    "contactnumber" => query.OrderBy(c => c.User_Credential.contactNumber),
-                    "lastlogon" => query.OrderByDescending(c => c.User_Credential.lastLogOn),
-                    "createdat" => query.OrderByDescending(c => c.createdAt),
-                    _ => query
-                };
-            }
-
-            var totalRecords = await query.CountAsync();
-
-            var customers = await query
-                .Skip(request.currentIndex)
-                .Take(request.offset)
-                .Select(c => new
-                {
-                    c.customerId,
-                    c.User_Credential.name,
-                    c.User_Credential.email,
-                    c.User_Credential.contactNumber,
-                    c.address,
-                    c.isVerified
-                })
-                .ToListAsync();
-
-            return (customers, totalRecords);
         }
 
         public async Task<bool> UpdateCustomer(Guid customerId, CustomerUpdateRequest request)

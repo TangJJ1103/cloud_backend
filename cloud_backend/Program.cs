@@ -80,12 +80,17 @@ builder.Services.AddScoped<IReceiptRepository, ReceiptRepository>();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+bool runMigration = builder.Configuration.GetValue<bool>("Migration");
+
 var app = builder.Build();
 
-using (var scope = app.Services.CreateScope())
+if (runMigration)
 {
-    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    db.Database.Migrate(); // applies migrations to AWS DB
+    using (var scope = app.Services.CreateScope())
+    {
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        db.Database.Migrate();
+    }
 }
 
 app.UseCors("AllowReactApp");

@@ -2,8 +2,8 @@
 using cloud_backend.Dto;
 using cloud_backend.Models;
 using cloud_backend.Repositories.ReceiptRepo;
+using cloud_backend.Request.Customer;
 using cloud_backend.Request.Order;
-using cloud_backend.Result;
 using MailKit.Search;
 using Microsoft.AspNetCore.Mvc;
 
@@ -63,6 +63,74 @@ namespace cloud_backend.Repositories.OrderRepo
                     }).ToList()
                 })
                 .ToListAsync();
+        }
+
+        public async Task<GetPaginatedDto<GetOrdersDto>> GetAllOrdersDtoPaginated(OrderPaginationRequest request)
+        {
+            var query = _context.Orders
+            .Include(c => c.OrderItems)
+            .AsQueryable();
+
+            if(request.status.HasValue)
+                query = query.Where(c => c.status == request.status);
+
+            if (!string.IsNullOrWhiteSpace(request.searchTerm))
+            {
+                string term = request.searchTerm.ToLower();
+                query = query.Where(c => c.orderId.ToString().ToLower().Contains(term));
+            }
+
+            var totalCount = await query.CountAsync();
+
+            // Apply pagination
+            var data = await query
+                .OrderByDescending(c => c.createdAt)
+                .Skip(request.currentIndex)
+                .Take(request.offset)
+                .Select(o => new GetOrdersDto
+                {
+                    orderId = o.orderId,
+                    credentialId = o.credentialId,
+                    quantity = o.quantity,
+                    amount = o.amount,
+                    discountPercentage = o.discountPercentage,
+                    createdAt = o.createdAt,
+                    updatedAt = o.updatedAt,
+                    fulfilledAt = o.fulfilledAt,
+                    status = o.status,
+                    orderItems = o.OrderItems.Select(oi => new GetOrderItemsDto
+                    {
+                        orderItemId = oi.orderItemId,
+                        orderId = oi.orderId,
+                        productId = oi.productId,
+                        quantity = oi.quantity,
+                        unitPrice = oi.unitPrice,
+                        discountPercentage = oi.discountPercentage,
+                        product = new GetProductsDto
+                        {
+                            productId = oi.Product.productId,
+                            name = oi.Product.name,
+                            cost = oi.Product.cost,
+                            price = oi.Product.price,
+                            stockQuantity = oi.Product.stockQuantity,
+                            description = oi.Product.description,
+                            model = oi.Product.model,
+                            category = oi.Product.category,
+                            isActive = oi.Product.isActive,
+                            discountPercentage = oi.Product.discountPercentage,
+                            soldQuantity = oi.Product.soldQuantity,
+                            createdAt = oi.Product.createdAt,
+                            updatedAt = oi.Product.updatedAt,
+                        }
+                    }).ToList()
+                })
+                .ToListAsync();
+
+            return new GetPaginatedDto<GetOrdersDto>
+            {
+                data = data,
+                total = totalCount
+            };
         }
 
         public async Task<IEnumerable<GetOrdersDto?>> GetUserOrdersDto(Guid credentialId)
@@ -177,32 +245,24 @@ namespace cloud_backend.Repositories.OrderRepo
             .ToListAsync();
         }
 
-        public async Task<CreateOrderResult?> CreateOrderAsync(CreateOrderRequest request)
+        public async Task<bool> CreateOrderAsync(CreateOrderRequest request)
         {
             // Validate product availability
             double totalAmount = 0;
             int totalQuantity = 0;
-            var orderItems = new List<Order_Items>();
 
             foreach (var item in request.orderItems)
             {
                 var product = await _context.Products
                     .FirstOrDefaultAsync(p => p.productId == item.productId && p.stockQuantity > 0);
 
-                if (product == null || product.stockQuantity < item.quantity) return null;
+                if (product == null || product.stockQuantity < item.quantity) return false;
 
                 double itemTotal = product.price * item.quantity;
-                totalAmount += itemTotal * ((100 - item.discountPercentage) / 100);
-                totalQuantity += item.quantity;
+                double discounted = itemTotal * ((100.0 - item.discountPercentage) / 100.0);
 
-                orderItems.Add(new Order_Items
-                {
-                    orderItemId = Guid.NewGuid(),
-                    productId = item.productId,
-                    quantity = item.quantity,
-                    unitPrice = product.price,
-                    discountPercentage = item.discountPercentage
-                });
+                totalAmount += discounted;
+                totalQuantity += item.quantity;
 
                 product.stockQuantity -= item.quantity;
                 product.soldQuantity += item.quantity;
@@ -218,9 +278,17 @@ namespace cloud_backend.Repositories.OrderRepo
                 discountPercentage = request.discountPercentage,
                 createdAt = DateTime.UtcNow,
                 status = 1, // Pending
-                OrderItems = orderItems
+                OrderItems = request.orderItems.Select(oi => new Order_Items
+                {
+                    orderItemId = Guid.NewGuid(),
+                    orderId = orderId,
+                    productId = oi.productId,
+                    quantity = oi.quantity,
+                    unitPrice = oi.unitPrice,
+                    discountPercentage = oi.discountPercentage
+                }).ToList()
             };
-            
+
             _context.Orders.Add(order);
             await _context.SaveChangesAsync();
 
@@ -234,10 +302,9 @@ namespace cloud_backend.Repositories.OrderRepo
                 paymentType = request.paymentType,
                 createdAt = DateTime.UtcNow,
             };
-
             await _receiptRepository.CreateReceipt(receipt);
 
-            return new CreateOrderResult { order = order, receipt = receipt };
+            return true;
         }
 
         public async Task<bool> UpdateOrderStatusAsync(Guid orderId, int status)

@@ -1,4 +1,6 @@
 ﻿using cloud_backend.Data;
+using cloud_backend.Dto;
+using cloud_backend.Request.Customer;
 using cloud_backend.Request.Staff;
 
 namespace cloud_backend.Repositories.StaffRepo
@@ -25,9 +27,57 @@ namespace cloud_backend.Repositories.StaffRepo
                     contactNumber = c.User_Credential.contactNumber,
                     role = c.User_Credential.role,
                     isActive = c.isActive,
-                    createdAt = (DateTime)c.createdAt
+                    createdAt = c.createdAt
                 })
                 .ToListAsync();
+        }
+
+        public async Task<GetPaginatedDto<StaffFindRequest>> GetAllStaffsPaginated(StaffPaginationRequest request)
+        {
+            var query = _context.Staff_User
+                .Include(c => c.User_Credential)
+                .AsQueryable();
+
+            if (request.isActive.HasValue)
+                query = query.Where(c => c.isActive == request.isActive.Value);
+
+            if(request.role.HasValue)
+                query = query.Where(c => c.User_Credential.role == request.role.Value);
+
+            if (!string.IsNullOrWhiteSpace(request.searchTerm))
+            {
+                string term = request.searchTerm.ToLower();
+                query = query.Where(c =>
+                    c.User_Credential.name.ToLower().Contains(term) ||
+                    c.User_Credential.email.ToLower().Contains(term) ||
+                    c.credentialId.ToString().ToLower().Contains(term) ||
+                    c.staffId.ToString().ToLower().Contains(term));
+            }
+
+            var totalCount = await query.CountAsync();
+
+            var data = await query
+                .OrderByDescending(c => c.createdAt)
+                .Skip(request.currentIndex)
+                .Take(request.offset)
+                .Select(c => new StaffFindRequest
+                {
+                    staffId = c.staffId,
+                    username = c.User_Credential.username,
+                    name = c.User_Credential.name,
+                    email = c.User_Credential.email,
+                    contactNumber = c.User_Credential.contactNumber,
+                    role = c.User_Credential.role,
+                    isActive = c.isActive,
+                    createdAt = c.createdAt
+                })
+                .ToListAsync();
+
+            return new GetPaginatedDto<StaffFindRequest>
+            {
+                data = data,
+                total = totalCount
+            };
         }
 
         public async Task<StaffFindRequest?> GetStaffById(Guid staffId)
@@ -46,52 +96,6 @@ namespace cloud_backend.Repositories.StaffRepo
                     isActive = c.isActive
                 })
                 .FirstOrDefaultAsync();
-        }
-
-        public async Task<(IEnumerable<object> staffs, int totalRecords)> FindStaffs(StaffPaginationRequest request)
-        {
-            var query = _context.Staff_User.Include(c => c.User_Credential).AsQueryable();
-
-            if (request.isActive.HasValue)
-            {
-                query = query.Where(c => c.isActive == request.isActive.Value);
-            }
-
-            if (request.role.HasValue)
-            {
-                query = query.Where(c => c.User_Credential.role == request.role.Value);
-            }
-
-            if (!string.IsNullOrEmpty(request.filterBy))
-            {
-                query = request.filterBy.ToLower() switch
-                {
-                    "name" => query.OrderBy(c => c.User_Credential.name),
-                    "email" => query.OrderBy(c => c.User_Credential.email),
-                    "contactnumber" => query.OrderBy(c => c.User_Credential.contactNumber),
-                    "lastlogon" => query.OrderByDescending(c => c.User_Credential.lastLogOn),
-                    "createdat" => query.OrderByDescending(c => c.createdAt),
-                    _ => query
-                };
-            }
-
-            var totalRecords = await query.CountAsync();
-
-            var staffs = await query
-                .Skip(request.currentIndex)
-                .Take(request.offset)
-                .Select(c => new
-                {
-                    c.staffId,
-                    c.User_Credential.name,
-                    c.User_Credential.email,
-                    c.User_Credential.contactNumber,
-                    c.User_Credential.role,
-                    c.isActive
-                })
-                .ToListAsync();
-
-            return (staffs, totalRecords);
         }
 
         public async Task<bool> UpdateStaff(Guid staffId, StaffUpdateRequest request)

@@ -1,10 +1,10 @@
-﻿namespace cloud_backend.Request.Customer
+﻿namespace cloud_backend.Request.Quotation
 {
-    public class CustomerPaginationRequest
+    public class QuotationPaginationRequest
     {
         public int offset { get; set; }
         public int currentIndex { get; set; }
-        public bool? isVerified { get; set; }
+        public int? status { get; set; }
         public string? searchTerm { get; set; }
     }
 }

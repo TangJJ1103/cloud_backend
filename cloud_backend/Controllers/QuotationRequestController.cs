@@ -1,5 +1,7 @@
 ﻿using cloud_backend.Data;
 using cloud_backend.Models;
+using cloud_backend.Repositories.QuotationRequestRepo;
+using cloud_backend.Repositories.StoreRepo;
 using cloud_backend.Request.Quotation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -11,42 +13,19 @@ namespace cloud_backend.Controllers
     [ApiController]
     public class QuotationRequestController : ControllerBase
     {
-        private readonly AppDbContext _context;
+        private readonly IQuotationRequestRepository _quotationRequestRepo;
+        private readonly IStoreRepository _storeRepo;
 
-        public QuotationRequestController(AppDbContext context) {
-            _context = context;
+        public QuotationRequestController(IQuotationRequestRepository quotationRequestRepository, IStoreRepository storeRepository) {
+            _quotationRequestRepo = quotationRequestRepository;
+            _storeRepo = storeRepository;
         }
 
         [Authorize]
-        [HttpGet("findAll")]
-        public async Task<ActionResult<IEnumerable<Quotation_Request>>> GetAllQuotationRequests()
+        [HttpPost("findAll")]
+        public async Task<IActionResult> GetAllQuotationRequestsPaginated(QuotationRequestPaginationRequest request)
         {
-            var requests = await _context.Quotation_Request
-                .Include(qr => qr.Store_User) // Include store details
-                .Include(qr => qr.quotationRequestItems) // Include request items
-                    .ThenInclude(qri => qri.Products) // Include product details
-                .Select(qr => new
-                {
-                    quotationRequestId = qr.quotationRequestId,
-                    storeId = qr.storeId,
-                    status = qr.status,
-                    createdAt = qr.createdAt,
-                    updatedAt = qr.updatedAt,
-                    store = qr.Store_User,
-                    quotationRequestItems = qr.quotationRequestItems.Select(qri => new
-                    {
-                        quotationRequestItemId = qri.quotationRequestItemId,
-                        productId = qri.productId,
-                        unitPrice = qri.unitPrice,
-                        quantity = qri.quantity,
-                        discountPercentage = qri.discountPercentage,
-                        product = qri.Products
-                    }).ToList()
-                })
-                .ToListAsync();
-
-            if (!requests.Any())
-                return Ok(new List<object>());
+            var requests = await _quotationRequestRepo.GetQuotationRequestsDtoPaginated(request);
 
             return Ok(requests);
         }
@@ -55,30 +34,7 @@ namespace cloud_backend.Controllers
         [HttpGet("findOne/{quotationRequestId}")]
         public async Task<ActionResult> GetQuotationRequestById(Guid quotationRequestId)
         {
-            var quotationRequest = await _context.Quotation_Request
-                .Include(qr => qr.Store_User) // Include store details
-                .Include(qr => qr.quotationRequestItems) // Include request items
-                    .ThenInclude(qri => qri.Products) // Include product details
-                .Where(qr => qr.quotationRequestId == quotationRequestId)
-                .Select(qr => new
-                {
-                    quotationRequestId = qr.quotationRequestId,
-                    storeId = qr.storeId,
-                    status = qr.status,
-                    createdAt = qr.createdAt,
-                    updatedAt = qr.updatedAt,
-                    store = qr.Store_User,
-                    quotationRequestItems = qr.quotationRequestItems.Select(qri => new
-                    {
-                        quotationRequestItemId = qri.quotationRequestItemId,
-                        productId = qri.productId,
-                        unitPrice = qri.unitPrice,
-                        quantity = qri.quantity,
-                        discountPercentage = qri.discountPercentage,
-                        product = qri.Products
-                    }).ToList()
-                })
-                .FirstOrDefaultAsync();
+            var quotationRequest = await _quotationRequestRepo.GetQuotationRequestById(quotationRequestId);
 
             return Ok(quotationRequest);
         }
@@ -94,10 +50,9 @@ namespace cloud_backend.Controllers
             }
 
             // Validate if store exists and is active
-            var store = await _context.Store_User
-                .FirstOrDefaultAsync(s => s.storeId == request.storeId && s.isActive);
+            var store = await _storeRepo.IsStoreActive(request.storeId);
 
-            if (store == null)
+            if (!store)
             {
                 return BadRequest(new { message = "Invalid or inactive store." });
             }
@@ -113,29 +68,7 @@ namespace cloud_backend.Controllers
                 quotationRequestItems = new List<Quotation_Request_Items>()
             };
 
-            // Validate products and add items
-            foreach (var item in request.quotationRequestItems)
-            {
-                var product = await _context.Products.FirstOrDefaultAsync(p => p.productId == item.productId);
-
-                if (product == null)
-                {
-                    return BadRequest(new { message = $"Product with ID '{item.productId}' not found." });
-                }
-
-                quotationRequest.quotationRequestItems.Add(new Quotation_Request_Items
-                {
-                    quotationRequestItemId = Guid.NewGuid(),
-                    quotationRequestId = quotationRequest.quotationRequestId,
-                    productId = item.productId,
-                    unitPrice = item.unitPrice,
-                    quantity = item.quantity,
-                    discountPercentage = item.discountPercentage
-                });
-            }
-
-            _context.Quotation_Request.Add(quotationRequest);
-            await _context.SaveChangesAsync();
+            await _quotationRequestRepo.CreateQuotationRequest(quotationRequest);
 
             return Ok(new
             {
@@ -147,8 +80,7 @@ namespace cloud_backend.Controllers
         [HttpPatch("updateStatus/{quotationRequestId}")]
         public async Task<IActionResult> UpdateQuotationRequestStatus(Guid quotationRequestId, [FromBody] UpdateQuotationRequest request)
         {
-            var quotationRequest = await _context.Quotation_Request
-                .FirstOrDefaultAsync(qr => qr.quotationRequestId == quotationRequestId);
+            var quotationRequest = await _quotationRequestRepo.GetQuotationRequestById(quotationRequestId);
 
             if (quotationRequest == null)
             {
@@ -159,7 +91,7 @@ namespace cloud_backend.Controllers
             quotationRequest.status = request.status;
             quotationRequest.updatedAt = DateTime.UtcNow;
 
-            await _context.SaveChangesAsync();
+            await _quotationRequestRepo.UpdateQuotationRequest(quotationRequest);
 
             return Ok(new { message = "Quotation request status updated successfully.", quotationRequest });
         }

@@ -20,11 +20,11 @@ namespace cloud_backend.Controllers
 
         // GET: customer/findAll
         [Authorize]
-        [HttpGet("findAll")]
-        public async Task<IActionResult> GetAllCustomers()
+        [HttpPost("findAll")]
+        public async Task<IActionResult> GetAllCustomersPaginated([FromBody] CustomerPaginationRequest request)
         {
-            var customers = await _customerRepository.GetAllCustomers();
-            return Ok(customers.Any() ? customers : new List<object>());
+            var customers = await _customerRepository.GetAllCustomersPaginated(request);
+            return Ok(customers);
         }
 
         // GET: customer/findOne/{customerId}
@@ -34,22 +34,6 @@ namespace cloud_backend.Controllers
         {
             var customer = await _customerRepository.GetCustomerById(customerId);
             return customer != null ? Ok(customer) : NotFound(new { message = "Customer not found" });
-        }
-
-        [Authorize]
-        [HttpPost("find")]
-        public async Task<IActionResult> FindCustomers([FromBody] CustomerPaginationRequest request)
-        {
-            if (request == null || request.offset < 1)
-                return BadRequest(new { message = "Invalid pagination parameters." });
-
-            var (customers, totalRecords) = await _customerRepository.FindCustomers(request);
-
-            return Ok(new
-            {
-                totalRecords,
-                customers
-            });
         }
 
         [Authorize]

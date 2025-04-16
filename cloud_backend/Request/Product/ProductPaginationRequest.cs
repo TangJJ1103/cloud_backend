@@ -1,10 +1,10 @@
-﻿namespace cloud_backend.Request.Customer
+﻿namespace cloud_backend.Request.Product
 {
-    public class CustomerPaginationRequest
+    public class ProductPaginationRequest
     {
         public int offset { get; set; }
         public int currentIndex { get; set; }
-        public bool? isVerified { get; set; }
+        public bool? isActive { get; set; }
         public string? searchTerm { get; set; }
     }
 }

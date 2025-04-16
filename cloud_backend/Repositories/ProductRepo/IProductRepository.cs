@@ -7,6 +7,7 @@ namespace cloud_backend.Repositories.ProductRepo
     public interface IProductRepository
     {
         Task<IEnumerable<GetProductsDto?>> GetAllProductsDto();
+        Task<GetPaginatedDto<GetProductsDto>> GetAllProductsDtoPaginated(ProductPaginationRequest request);
         Task<GetProductsDto?> GetProductDtoById(Guid productId);
         Task<Products?> GetProductById(Guid productId);
         Task<bool> CreateProduct(Products product);

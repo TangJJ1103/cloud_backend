@@ -28,11 +28,11 @@ namespace cloud_backend.Controllers
 
             var userCredential = await _authRepository.AuthenticateAsync(credential);
             if (userCredential == null)
-                return Unauthorized(new { message = "Invalid username or password." });
+                return BadRequest(new { message = "Invalid username or password." });
 
             var user = await _authRepository.GetUserDetailsAsync(userCredential);
             if (user == null)
-                return Unauthorized(new { message = "User not authorized or account deactivated." });
+                return BadRequest(new { message = "User not authorized or account deactivated." });
 
             var token = _jwtService.GenerateToken(userCredential.credentialId, userCredential.username);
             return Ok(new { user, authToken = token });

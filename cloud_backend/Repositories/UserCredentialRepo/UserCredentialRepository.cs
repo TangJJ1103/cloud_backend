@@ -15,13 +15,13 @@ namespace cloud_backend.Repositories.UserCredentialRepo
         public async Task<bool> IsStoreOrCustomer(Guid credentialId)
         {
             var userRole = await _context.User_Credentials.FirstOrDefaultAsync(u => u.credentialId == credentialId);
-
+            Console.WriteLine("the user role" + userRole.role);
             if (userRole == null)
             {
                 return false;
             }
 
-            if (userRole.role != 4 || userRole.role != 5)
+            if (userRole.role != 4 && userRole.role != 5)
             {
                 return false;
             }

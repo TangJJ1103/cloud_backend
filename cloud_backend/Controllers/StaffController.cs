@@ -21,10 +21,10 @@ namespace cloud_backend.Controllers
         }
 
         [Authorize]
-        [HttpGet("findAll")]
-        public async Task<ActionResult<IEnumerable<StaffFindRequest>>> GetAllStaffs()
+        [HttpPost("findAll")]
+        public async Task<IActionResult> GetAllStaffsPaginated([FromBody] StaffPaginationRequest request)
         {
-            var staffs = await _staffRepository.GetAllStaffs();
+            var staffs = await _staffRepository.GetAllStaffsPaginated(request);
             return Ok(staffs);
         }
 
@@ -34,17 +34,6 @@ namespace cloud_backend.Controllers
         {
             var staff = await _staffRepository.GetStaffById(staffId);
             return staff != null ? Ok(staff) : NotFound(new { message = "Staff not found" });
-        }
-
-        [Authorize]
-        [HttpPost("find")]
-        public async Task<IActionResult> FindStaffs([FromBody] StaffPaginationRequest request)
-        {
-            if (request == null || request.offset < 1 || request.currentIndex < 1)
-                return BadRequest(new { message = "Invalid pagination parameters." });
-
-            var (staffs, totalRecords) = await _staffRepository.FindStaffs(request);
-            return Ok(new { totalRecords, staffs });
         }
 
         [Authorize]

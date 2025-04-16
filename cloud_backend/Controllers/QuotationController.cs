@@ -25,13 +25,10 @@ namespace cloud_backend.Controllers
         }
 
         [Authorize]
-        [HttpGet("findAll")]
-        public async Task<ActionResult<IEnumerable<Quotations>>> GetAllQuotations()
+        [HttpPost("findAll")]
+        public async Task<IActionResult> GetAllQuotationsPaginated([FromBody] QuotationPaginationRequest request)
         {
-            var quotations = await _quotationRepo.GetQuotationsDto();
-
-            if (!quotations.Any())
-                return Ok(new List<object>());
+            var quotations = await _quotationRepo.GetQuotationsDtoPaginated(request);
 
             return Ok(quotations);
         }

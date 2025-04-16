@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using cloud_backend.Models;
 using cloud_backend.Dto;
+using cloud_backend.Request.Receipts;
 
 namespace cloud_backend.Controllers
 {
@@ -21,15 +22,15 @@ namespace cloud_backend.Controllers
         }
 
         [Authorize]
-        [HttpGet("getAllReceipts/{userId}")]
-        public async Task<ActionResult<GetReceiptsDto?>> GetAllReceipts(Guid userId)
+        [HttpPost("getAllReceipts/{userId}")]
+        public async Task<IActionResult> GetAllReceiptsPaginated(Guid userId, [FromBody] ReceiptPaginationRequest request)
         {
             if(userId == Guid.Empty)
             {
                 return BadRequest(new { message = "Invalid input" });
             }
 
-            var receipts = await _receiptRepo.GetAllReceiptsDto();
+            var receipts = await _receiptRepo.GetAllReceiptsDtoPaginated(request);
             
             return Ok(receipts);
         }

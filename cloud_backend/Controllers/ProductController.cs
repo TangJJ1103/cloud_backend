@@ -19,10 +19,10 @@ namespace cloud_backend.Controllers
         }
 
         [Authorize]
-        [HttpGet("findAll")]
-        public async Task<ActionResult<IEnumerable<Products>>> GetAllProducts()
+        [HttpPost("findAll")]
+        public async Task<IActionResult> GetAllProducts([FromBody] ProductPaginationRequest request)
         {
-            var products = await _productRepository.GetAllProductsDto();
+            var products = await _productRepository.GetAllProductsDtoPaginated(request);
             return Ok(products);
         }
 

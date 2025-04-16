@@ -1,4 +1,6 @@
 ﻿using cloud_backend.Data;
+using cloud_backend.Dto;
+using cloud_backend.Request.Customer;
 using cloud_backend.Request.Store;
 
 namespace cloud_backend.Repositories.StoreRepo
@@ -26,6 +28,55 @@ namespace cloud_backend.Repositories.StoreRepo
                     address = c.address,
                     isActive = c.isActive
                 }).ToListAsync();
+        }
+
+        public async Task<GetPaginatedDto<StoreFindRequest>> GetAllStoresPaginated(StorePaginationRequest request)
+        {
+            var query = _context.Store_User
+            .Include(c => c.User_Credential)
+            .AsQueryable();
+
+            // Filtering
+            if (request.isActive.HasValue)
+                query = query.Where(c => c.isActive == request.isActive.Value);
+
+            // Search (e.g., by name or email)
+            if (!string.IsNullOrWhiteSpace(request.searchTerm))
+            {
+                string term = request.searchTerm.ToLower();
+                query = query.Where(c =>
+                    c.User_Credential.name.ToLower().Contains(term) ||
+                    c.User_Credential.email.ToLower().Contains(term) ||
+                    c.address.ToLower().Contains(term) ||
+                    c.credentialId.ToString().ToLower().Contains(term) ||
+                    c.storeId.ToString().ToLower().Contains(term));
+            }
+
+            // Total count for pagination
+            var totalCount = await query.CountAsync();
+
+            // Apply pagination
+            var data = await query
+                .OrderByDescending(c => c.createdAt)
+                .Skip(request.currentIndex)
+                .Take(request.offset)
+                .Select(c => new StoreFindRequest
+                {
+                    storeId = c.storeId,
+                    username = c.User_Credential.username,
+                    name = c.User_Credential.name,
+                    email = c.User_Credential.email,
+                    contactNumber = c.User_Credential.contactNumber,
+                    address = c.address,
+                    isActive = c.isActive
+                })
+                .ToListAsync();
+
+            return new GetPaginatedDto<StoreFindRequest>
+            {
+                data = data,
+                total = totalCount
+            };
         }
 
         public async Task<StoreFindRequest?> GetStoreById(Guid storeId)
@@ -66,47 +117,6 @@ namespace cloud_backend.Repositories.StoreRepo
         {
             return await _context.Store_User
                 .AnyAsync(s => s.storeId == storeId && s.isActive);
-        }
-
-        public async Task<(IEnumerable<object> Stores, int TotalRecords)> FindStores(StorePaginationRequest request)
-        {
-            var query = _context.Store_User
-                .Include(c => c.User_Credential)
-                .AsQueryable();
-
-            if (request.isActive.HasValue)
-                query = query.Where(c => c.isActive == request.isActive.Value);
-
-            if (!string.IsNullOrEmpty(request.filterBy))
-            {
-                query = request.filterBy.ToLower() switch
-                {
-                    "name" => query.OrderBy(c => c.User_Credential.name),
-                    "email" => query.OrderBy(c => c.User_Credential.email),
-                    "contactnumber" => query.OrderBy(c => c.User_Credential.contactNumber),
-                    "lastlogon" => query.OrderByDescending(c => c.User_Credential.lastLogOn),
-                    "createdat" => query.OrderByDescending(c => c.createdAt),
-                    _ => query
-                };
-            }
-
-            int totalRecords = await query.CountAsync();
-
-            var stores = await query
-                .Skip(request.currentIndex)
-                .Take(request.offset)
-                .Select(c => new
-                {
-                    c.storeId,
-                    c.User_Credential.name,
-                    c.User_Credential.email,
-                    c.User_Credential.contactNumber,
-                    c.address,
-                    c.isActive
-                })
-                .ToListAsync();
-
-            return (stores, totalRecords);
         }
 
         public async Task<bool> UpdateStore(Guid storeId, StoreUpdateRequest request)

@@ -28,11 +28,11 @@ namespace cloud_backend.Controllers
 
         // GET: orders/findAll
         [Authorize]
-        [HttpGet("findAll")]
-        public async Task<ActionResult<IEnumerable<Orders>>> GetAllOrders()
+        [HttpPost("findAll")]
+        public async Task<IActionResult> GetAllOrdersPaginated([FromBody] OrderPaginationRequest request)
         {
-            var orders = await _orderRepository.GetAllOrdersDto();
-            return Ok(orders.Any() ? orders : new List<object>());
+            var orders = await _orderRepository.GetAllOrdersDtoPaginated(request);
+            return Ok(orders);
         }
 
         // GET: orders/findOne/{orderId}
@@ -58,15 +58,15 @@ namespace cloud_backend.Controllers
 
             var user = await _userCredentialRepository.IsStoreOrCustomer(request.credentialId);
 
+            Console.WriteLine("userStatus = " + user);
             if (!user)
             {
                 return BadRequest(new { message = "Invalid order credential" });
             }
 
-            var orderAndReceipt = await _orderRepository.CreateOrderAsync(request);
-            if (orderAndReceipt == null) return BadRequest(new { message = "Failed to create order." });
-
-            return Ok(new { message = "Order placed successfully.", order = orderAndReceipt.order, receipt = orderAndReceipt.receipt });
+            var ok = await _orderRepository.CreateOrderAsync(request);
+            if (!ok) { return BadRequest(new { message = "Order place failed" }); }
+            return Ok(new { message = "Order placed successfully." });
         }
 
         // PATCH: orders/updateStatus/{orderId}

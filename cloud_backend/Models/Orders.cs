@@ -1,4 +1,5 @@
-﻿using Microsoft.Identity.Client.Platforms.Features.DesktopOs.Kerberos;
+﻿
+using Microsoft.Identity.Client.Platforms.Features.DesktopOs.Kerberos;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;

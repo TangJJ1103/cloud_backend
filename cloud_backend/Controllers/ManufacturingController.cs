@@ -22,30 +22,11 @@ namespace cloud_backend.Controllers
         }
 
         [Authorize]
-        [HttpGet("findAll")]
-        public async Task<ActionResult<IEnumerable<Manufacturing_Request>>> GetAllManufacturingRequests()
+        [HttpPost("findAll")]
+        public async Task<IActionResult> GetAllManufacturingRequestsPaginated([FromBody] ManufacturingPaginationRequest request)
         {
-            var requests = await _manufactureRepo.GetManufacturingRequests();
-
-            if (!requests.Any())
-            {
-                return Ok(new List<object>());
-            }
-            
-            var result = requests
-                .Select(m => new
-                {
-                    requestId = m.requestId,
-                    quantity = m.quantity,
-                    cost = m.cost,
-                    status = m.status,
-                    createdAt = m.createdAt,
-                    updatedAt = m.updatedAt,
-                    product = m.Products,
-                })
-                .ToList();
-
-            return Ok(result);
+            var requests = await _manufactureRepo.GetManufacturingRequestsPaginated(request);
+            return Ok(requests);
         }
 
         [Authorize]

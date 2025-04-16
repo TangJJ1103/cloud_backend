@@ -19,10 +19,10 @@ namespace cloud_backend.Controllers
         }
 
         [Authorize]
-        [HttpGet("findAll")]
-        public async Task<ActionResult<IEnumerable<StoreFindRequest>>> GetAllStores()
+        [HttpPost("findAll")]
+        public async Task<IActionResult> GetAllStoresPaginated([FromBody] StorePaginationRequest request)
         {
-            var stores = await _storeRepository.GetAllStores();
+            var stores = await _storeRepository.GetAllStoresPaginated(request);
             return Ok(stores);
         }
 
@@ -32,17 +32,6 @@ namespace cloud_backend.Controllers
         {
             var store = await _storeRepository.GetStoreById(storeId);
             return store != null ? Ok(store) : NotFound(new { message = "Store not found" });
-        }
-
-        [Authorize]
-        [HttpPost("find")]
-        public async Task<IActionResult> FindStores([FromBody] StorePaginationRequest request)
-        {
-            if (request == null || request.offset < 1 || request.currentIndex < 1)
-                return BadRequest(new { message = "Invalid pagination parameters." });
-
-            var (stores, totalRecords) = await _storeRepository.FindStores(request);
-            return Ok(new { totalRecords, stores });
         }
 
         [Authorize]

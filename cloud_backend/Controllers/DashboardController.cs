@@ -327,6 +327,43 @@ namespace cloud_backend.Controllers
 
             return Ok(result);
         }
+
+        [Authorize]
+        [HttpGet("customerRecentOrders/{credentialId}")]
+        public async Task<ActionResult> GetCustomerRecentOrders(Guid credentialId)
+        {
+            if (credentialId == Guid.Empty)
+            {
+                return BadRequest(new { message = "Invalid input" });
+            }
+
+            var userOrders = await _orderRepo.GetUserOrdersDto(credentialId);
+            if (!userOrders.Any())
+            {
+                return Ok(new List<object> { });
+            }
+
+            var result = userOrders
+                .OrderByDescending(order => order.updatedAt ?? order.createdAt)
+                .Take(5);
+
+            return Ok(result);
+        }
+
+        [Authorize]
+        [HttpGet("promotionalProducts")]
+        public async Task<ActionResult> GetPromotionalProducts()
+        {
+            var products = await _productRepo.GetAllProductsDto();
+            if (!products.Any())
+            {
+                return Ok(new List<object> { });
+            }
+
+            var result = products.OrderByDescending(p => p.discountPercentage).Take(10);
+
+            return Ok(result);
+        }
         #endregion
 
         #region store
