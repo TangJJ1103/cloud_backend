@@ -78,8 +78,8 @@ namespace cloud_backend.Controllers
                 customerId = Guid.NewGuid(),
                 credentialId = credentials.credentialId,
                 address = request.address,
-                createdAt = DateTime.UtcNow,
-                updatedAt = DateTime.UtcNow,
+                createdAt = DateTime.UtcNow.AddHours(8),
+                updatedAt = DateTime.UtcNow.AddHours(8),
                 verificationToken = Guid.NewGuid().ToString(),
                 isVerified = false,
                 User_Credential = credentials
@@ -137,8 +137,8 @@ namespace cloud_backend.Controllers
                 staffId = Guid.NewGuid(),
                 credentialId = credentials.credentialId,
                 isActive = true,
-                createdAt = DateTime.UtcNow,
-                updatedAt = DateTime.UtcNow,
+                createdAt = DateTime.UtcNow.AddHours(8),
+                updatedAt = DateTime.UtcNow.AddHours(8),
                 User_Credential = credentials
             };
 
@@ -181,8 +181,8 @@ namespace cloud_backend.Controllers
                 credentialId = credentials.credentialId,
                 address = request.address,
                 isActive = true,
-                createdAt = DateTime.UtcNow,
-                updatedAt = DateTime.UtcNow,
+                createdAt = DateTime.UtcNow.AddHours(8),
+                updatedAt = DateTime.UtcNow.AddHours(8),
                 User_Credential = credentials
             };
 

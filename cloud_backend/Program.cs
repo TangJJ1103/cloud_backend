@@ -15,6 +15,7 @@ using cloud_backend.Repositories.ReceiptRepo;
 using cloud_backend.Repositories.ManufactureRepo;
 using cloud_backend.Repositories.QuotationRepo;
 using cloud_backend.Repositories.QuotationRequestRepo;
+using cloud_backend.Request.S3;
 
 var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("MySqlConn");
@@ -24,7 +25,8 @@ var secretKey = Encoding.UTF8.GetBytes(jwtSettings["SecretKey"]);
 
 
 // Add services to the container.
-
+builder.Services.Configure<S3Settings>(builder.Configuration.GetSection("AWS"));
+builder.Services.AddSingleton<S3Service>();
 builder.Services.AddControllers();
 
 builder.Services.AddCors(options =>

@@ -263,9 +263,6 @@ namespace cloud_backend.Repositories.OrderRepo
 
                 totalAmount += discounted;
                 totalQuantity += item.quantity;
-
-                product.stockQuantity -= item.quantity;
-                product.soldQuantity += item.quantity;
             }
 
             var orderId = Guid.NewGuid();
@@ -276,7 +273,7 @@ namespace cloud_backend.Repositories.OrderRepo
                 quantity = totalQuantity,
                 amount = totalAmount,
                 discountPercentage = request.discountPercentage,
-                createdAt = DateTime.UtcNow,
+                createdAt = DateTime.UtcNow.AddHours(8),
                 status = 1, // Pending
                 OrderItems = request.orderItems.Select(oi => new Order_Items
                 {
@@ -300,7 +297,7 @@ namespace cloud_backend.Repositories.OrderRepo
                 amount = totalAmount,
                 paymentMethod = request.paymentMethod,
                 paymentType = request.paymentType,
-                createdAt = DateTime.UtcNow,
+                createdAt = DateTime.UtcNow.AddHours(8),
             };
             await _receiptRepository.CreateReceipt(receipt);
 
@@ -314,11 +311,23 @@ namespace cloud_backend.Repositories.OrderRepo
             if (order == null) return false;
 
             order.status = status;
-            order.updatedAt = DateTime.UtcNow;
+            order.updatedAt = DateTime.UtcNow.AddHours(8);
 
             if (status == 3) // Fulfilled
             {
-                order.fulfilledAt = DateTime.UtcNow;
+                order.fulfilledAt = DateTime.UtcNow.AddHours(8);
+
+                foreach (var item in order.OrderItems)
+                {
+                    var product = await _context.Products
+                        .FirstOrDefaultAsync(p => p.productId == item.productId && p.stockQuantity > 0);
+
+                    if (product == null || product.stockQuantity < item.quantity) return false;
+
+                    product.stockQuantity -= item.quantity;
+                    product.soldQuantity += item.quantity;
+                }
+
             }
             else if (status == 4) // Cancelled -> Restore stock
             {
@@ -329,7 +338,7 @@ namespace cloud_backend.Repositories.OrderRepo
                     {
                         product.soldQuantity -= item.quantity;
                         product.stockQuantity += item.quantity;
-                        product.updatedAt = DateTime.UtcNow;
+                        product.updatedAt = DateTime.UtcNow.AddHours(8);
                     }
                 }
             }

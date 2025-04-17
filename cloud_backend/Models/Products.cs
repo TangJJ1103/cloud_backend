@@ -20,6 +20,7 @@ namespace cloud_backend.Models
         public int soldQuantity { get; set; }
         public DateTime createdAt { get; set; }
         public DateTime? updatedAt { get; set; }
+        public string? imageUrl { get; set; }
 
         [JsonIgnore]
         public virtual Order_Items? Order_Items { get; set; }

@@ -23,7 +23,7 @@ namespace cloud_backend.Services
             {
                 new Claim(JwtRegisteredClaimNames.Sub, userId.ToString()),
                 new Claim(JwtRegisteredClaimNames.Name, name),
-                new Claim(JwtRegisteredClaimNames.AuthTime, new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds().ToString()),
+                new Claim(JwtRegisteredClaimNames.AuthTime, new DateTimeOffset(DateTime.UtcNow.AddHours(8)).ToUnixTimeSeconds().ToString()),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()) // Unique Token ID
             };
 
@@ -34,7 +34,7 @@ namespace cloud_backend.Services
                 issuer: jwtSettings["Issuer"],
                 audience: jwtSettings["Audience"],
                 claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(Convert.ToInt32(jwtSettings["ExpiryInMinutes"])),
+                expires: DateTime.UtcNow.AddHours(8).AddMinutes(Convert.ToInt32(jwtSettings["ExpiryInMinutes"])),
                 signingCredentials: credentials
             );
 

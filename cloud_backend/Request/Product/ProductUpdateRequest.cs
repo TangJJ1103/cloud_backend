@@ -11,5 +11,6 @@
         public string? category { get; set; }
         public bool? isActive { get; set; }
         public int? discountPercentage { get; set; }
+        public string? imageUrl { get; set; }
     }
 }

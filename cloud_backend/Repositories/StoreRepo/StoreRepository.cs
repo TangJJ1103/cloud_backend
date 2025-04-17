@@ -159,7 +159,7 @@ namespace cloud_backend.Repositories.StoreRepo
             if (!string.IsNullOrEmpty(request.address))
                 store.address = request.address;
 
-            store.updatedAt = DateTime.UtcNow;
+            store.updatedAt = DateTime.UtcNow.AddHours(8);
 
             await _context.SaveChangesAsync();
             return true;

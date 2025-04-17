@@ -156,7 +156,7 @@ namespace cloud_backend.Repositories.CustomerRepo
             if (request.address != null)
                 customer.address = request.address;
 
-            customer.updatedAt = DateTime.UtcNow;
+            customer.updatedAt = DateTime.UtcNow.AddHours(8);
 
             await _context.SaveChangesAsync();
             return true;
@@ -169,7 +169,7 @@ namespace cloud_backend.Repositories.CustomerRepo
             if (user == null)
                 return null;
 
-            user.updatedAt = DateTime.UtcNow;
+            user.updatedAt = DateTime.UtcNow.AddHours(8);
             user.isVerified = true;
             user.verificationToken = null;
 

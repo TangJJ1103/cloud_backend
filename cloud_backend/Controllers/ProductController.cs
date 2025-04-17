@@ -20,9 +20,17 @@ namespace cloud_backend.Controllers
 
         [Authorize]
         [HttpPost("findAll")]
-        public async Task<IActionResult> GetAllProducts([FromBody] ProductPaginationRequest request)
+        public async Task<IActionResult> GetAllProductsPaginated([FromBody] ProductPaginationRequest request)
         {
             var products = await _productRepository.GetAllProductsDtoPaginated(request);
+            return Ok(products);
+        }
+
+        [Authorize]
+        [HttpGet("getAll")]
+        public async Task<ActionResult> GetAllProducts()
+        {
+            var products = await _productRepository.GetAllProductsDto();
             return Ok(products);
         }
 

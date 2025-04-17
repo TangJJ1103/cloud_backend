@@ -140,7 +140,7 @@ namespace cloud_backend.Repositories.StaffRepo
             if (request.isActive.HasValue)
                 staff.isActive = request.isActive.Value;
 
-            staff.updatedAt = DateTime.UtcNow;
+            staff.updatedAt = DateTime.UtcNow.AddHours(8);
 
             await _context.SaveChangesAsync();
             return true;

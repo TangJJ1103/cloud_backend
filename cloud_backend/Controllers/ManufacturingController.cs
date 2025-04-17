@@ -81,9 +81,9 @@ namespace cloud_backend.Controllers
                 productId = request.productId,
                 quantity = request.quantity,
                 cost = manufacturingCost, 
-                createdAt = DateTime.UtcNow,
-                updatedAt = DateTime.UtcNow,
-                status = 0 // 0 = Pending
+                createdAt = DateTime.UtcNow.AddHours(8),
+                updatedAt = DateTime.UtcNow.AddHours(8),
+                status = 1
             };
 
             await _manufactureRepo.CreateManufacturingRequest(manufacturingRequest);
@@ -105,7 +105,7 @@ namespace cloud_backend.Controllers
                 
             // Update the status
             request.status = newStatus.status;
-            request.updatedAt = DateTime.UtcNow;
+            request.updatedAt = DateTime.UtcNow.AddHours(8);
 
             // If status is 3 (Completed), update product stock
             if (newStatus.status == 3 && request.Products != null)

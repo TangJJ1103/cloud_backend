@@ -113,7 +113,7 @@ namespace cloud_backend.Repositories.ProductRepo
                 return false;
 
             product.productId = Guid.NewGuid();
-            product.createdAt = DateTime.UtcNow;
+            product.createdAt = DateTime.UtcNow.AddHours(8);
 
             _context.Products.Add(product);
             await _context.SaveChangesAsync();

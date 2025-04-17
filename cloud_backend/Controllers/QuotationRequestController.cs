@@ -57,15 +57,27 @@ namespace cloud_backend.Controllers
                 return BadRequest(new { message = "Invalid or inactive store." });
             }
 
-            // Create new Quotation Request
+            var quotationRequestId = Guid.NewGuid();
+
+            // Map request items to entity items
+            var quotationItems = request.quotationRequestItems.Select(item => new Quotation_Request_Items
+            {
+                quotationRequestItemId = Guid.NewGuid(),
+                quotationRequestId = quotationRequestId,
+                productId = item.productId,
+                unitPrice = item.unitPrice,
+                quantity = item.quantity,
+                discountPercentage = item.discountPercentage
+            }).ToList();
+
             var quotationRequest = new Quotation_Request
             {
-                quotationRequestId = Guid.NewGuid(),
+                quotationRequestId = quotationRequestId,
                 storeId = request.storeId,
-                status = request.status,
-                createdAt = DateTime.UtcNow,
+                status = 1,
+                createdAt = DateTime.UtcNow.AddHours(8),
                 updatedAt = null,
-                quotationRequestItems = new List<Quotation_Request_Items>()
+                quotationRequestItems = quotationItems
             };
 
             await _quotationRequestRepo.CreateQuotationRequest(quotationRequest);
@@ -89,7 +101,7 @@ namespace cloud_backend.Controllers
 
             // Update status and timestamp
             quotationRequest.status = request.status;
-            quotationRequest.updatedAt = DateTime.UtcNow;
+            quotationRequest.updatedAt = DateTime.UtcNow.AddHours(8);
 
             await _quotationRequestRepo.UpdateQuotationRequest(quotationRequest);
 

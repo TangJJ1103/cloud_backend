@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using cloud_backend.Models;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace cloud_backend.Controllers
 {
@@ -87,7 +88,7 @@ namespace cloud_backend.Controllers
         [HttpGet("revenueDailyData")]
         public async Task<ActionResult> GetDailyRevenueData()
         {
-            var today = DateTime.UtcNow.Date;
+            var today = DateTime.UtcNow.AddHours(8).Date;
 
             // Get Monday of the current week
             var startOfWeek = today.AddDays(-(int)today.DayOfWeek + (int)DayOfWeek.Monday);
