@@ -83,7 +83,7 @@ namespace cloud_backend.Controllers
                 User_Credential = credentials
             };
 
-            string verificationLink = $"http://localhost:5041/Email/verifyEmail?token={customerUser.verificationToken}";
+            string verificationLink = $"http://13.219.48.120:5041/Email/verifyEmail?token={customerUser.verificationToken}";
             bool emailSent = await _emailService.SendVerificationEmail(credentials.email, verificationLink);
 
             if (!emailSent)
