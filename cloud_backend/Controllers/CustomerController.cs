@@ -18,7 +18,6 @@ namespace cloud_backend.Controllers
             _customerRepository = customerRepository;
         }
 
-        // GET: customer/findAll
         [Authorize]
         [HttpPost("findAll")]
         public async Task<IActionResult> GetAllCustomersPaginated([FromBody] CustomerPaginationRequest request)
@@ -27,7 +26,6 @@ namespace cloud_backend.Controllers
             return Ok(customers);
         }
 
-        // GET: customer/findOne/{customerId}
         [Authorize]
         [HttpGet("findOne/{customerId}")]
         public async Task<IActionResult> GetCustomerById(Guid customerId)

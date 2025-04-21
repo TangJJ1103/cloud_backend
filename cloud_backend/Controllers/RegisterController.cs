@@ -49,7 +49,6 @@ namespace cloud_backend.Controllers
             return null;
         }
 
-        // POST: register/customer
         [HttpPost("customer")]
         public async Task<ActionResult> PostCustomer([FromBody] CustomerRegisterRequest request)
         {
@@ -61,7 +60,6 @@ namespace cloud_backend.Controllers
             var validationError = ValidateUserCredentials(request.username, request.email, request.password, request.contactNumber);
             if (validationError != null) return BadRequest(new { message = validationError });
 
-            // Create credentials
             var credentials = new User_Credentials
             {
                 credentialId = Guid.NewGuid(),
@@ -85,7 +83,6 @@ namespace cloud_backend.Controllers
                 User_Credential = credentials
             };
 
-            // Send verification email
             string verificationLink = $"http://localhost:5041/Email/verifyEmail?token={customerUser.verificationToken}";
             bool emailSent = await _emailService.SendVerificationEmail(credentials.email, verificationLink);
 
@@ -101,7 +98,6 @@ namespace cloud_backend.Controllers
             return Ok();
         }
 
-        // POST: register/staff
         [HttpPost("staff")]
         public async Task<ActionResult> PostStaff([FromBody] StaffRegisterRequest request)
         {
@@ -110,7 +106,6 @@ namespace cloud_backend.Controllers
                 return BadRequest(new { message = "User data is required." });
             }
 
-            // Validate User Credentials
             var validationError = ValidateUserCredentials(request.username, request.email, request.password, request.contactNumber);
             if (validationError != null) return BadRequest(new { message = validationError });
 
@@ -119,7 +114,6 @@ namespace cloud_backend.Controllers
                 return BadRequest(new { message = "User Role is invalid. Must be 'Super Admin', 'Admin' or 'Staff'." });
             }
 
-            // Create User Credentials
             var credentials = new User_Credentials
             {
                 credentialId = Guid.NewGuid(),
@@ -131,7 +125,6 @@ namespace cloud_backend.Controllers
                 role = request.role
             };
 
-            // Create Factory User
             var staffUser = new Staff_User
             {
                 staffId = Guid.NewGuid(),
@@ -142,7 +135,6 @@ namespace cloud_backend.Controllers
                 User_Credential = credentials
             };
 
-            // Save to Database
             _context.User_Credentials.Add(credentials);
             _context.Staff_User.Add(staffUser);
             await _context.SaveChangesAsync();
@@ -150,8 +142,6 @@ namespace cloud_backend.Controllers
             return Ok();
         }
 
-
-        //POST: register/store
         [HttpPost("store")]
         public async Task<ActionResult> PostStore([FromBody] StoreRegisterRequest request)
         {
@@ -163,7 +153,6 @@ namespace cloud_backend.Controllers
             var validationError = ValidateUserCredentials(request.username, request.email, request.password, request.contactNumber);
             if (validationError != null) return BadRequest(new { message = validationError });
 
-            // Create credentials
             var credentials = new User_Credentials
             {
                 credentialId = Guid.NewGuid(),

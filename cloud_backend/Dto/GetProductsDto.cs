@@ -13,6 +13,7 @@
         public bool isActive { get; set; }
         public int discountPercentage { get; set; }
         public int soldQuantity { get; set; }
+        public string? imageUrl { get; set; }
         public DateTime? createdAt { get; set; }
         public DateTime? updatedAt { get; set; }
     }

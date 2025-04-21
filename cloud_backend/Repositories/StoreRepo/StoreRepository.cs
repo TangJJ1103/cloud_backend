@@ -26,7 +26,9 @@ namespace cloud_backend.Repositories.StoreRepo
                     email = c.User_Credential.email,
                     contactNumber = c.User_Credential.contactNumber,
                     address = c.address,
-                    isActive = c.isActive
+                    isActive = c.isActive,
+                    createdAt = c.createdAt,
+                    updatedAt = c.updatedAt,
                 }).ToListAsync();
         }
 
@@ -68,7 +70,9 @@ namespace cloud_backend.Repositories.StoreRepo
                     email = c.User_Credential.email,
                     contactNumber = c.User_Credential.contactNumber,
                     address = c.address,
-                    isActive = c.isActive
+                    isActive = c.isActive,
+                    createdAt = c.createdAt,
+                    updatedAt = c.updatedAt,
                 })
                 .ToListAsync();
 
@@ -92,7 +96,9 @@ namespace cloud_backend.Repositories.StoreRepo
                     email = c.User_Credential.email,
                     contactNumber = c.User_Credential.contactNumber,
                     address = c.address,
-                    isActive = c.isActive
+                    isActive = c.isActive,
+                    createdAt = c.createdAt,
+                    updatedAt = c.updatedAt,
                 }).FirstOrDefaultAsync();
         }
 
@@ -109,7 +115,9 @@ namespace cloud_backend.Repositories.StoreRepo
                     email = c.User_Credential.email,
                     contactNumber = c.User_Credential.contactNumber,
                     address = c.address,
-                    isActive = c.isActive
+                    isActive = c.isActive,
+                    createdAt= c.createdAt,
+                    updatedAt = c.updatedAt
                 }).FirstOrDefaultAsync();
         }
 

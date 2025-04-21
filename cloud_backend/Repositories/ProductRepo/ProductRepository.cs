@@ -29,6 +29,7 @@ namespace cloud_backend.Repositories.ProductRepo
                 category = p.category,
                 isActive = p.isActive,
                 discountPercentage = p.discountPercentage,
+                imageUrl = p.imageUrl,
                 createdAt = p.createdAt,
                 updatedAt = p.updatedAt,
             }).ToListAsync();
@@ -70,6 +71,7 @@ namespace cloud_backend.Repositories.ProductRepo
                     category = p.category,
                     isActive = p.isActive,
                     discountPercentage = p.discountPercentage,
+                    imageUrl = p.imageUrl,
                     createdAt = p.createdAt,
                     updatedAt = p.updatedAt,
                 })
@@ -97,6 +99,7 @@ namespace cloud_backend.Repositories.ProductRepo
                     category = p.category,
                     isActive = p.isActive,
                     discountPercentage = p.discountPercentage,
+                    imageUrl = p.imageUrl,
                     createdAt = p.createdAt,
                     updatedAt = p.updatedAt,
                 }).FirstOrDefaultAsync();

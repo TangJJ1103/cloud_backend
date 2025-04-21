@@ -47,6 +47,7 @@ namespace cloud_backend.Repositories.QuotationRequestRepo
                             category = qri.Products.category,
                             isActive = qri.Products.isActive,
                             discountPercentage = qri.Products.discountPercentage,
+                            imageUrl = qri.Products.imageUrl,
                             createdAt = qri.Products.createdAt,
                             updatedAt = qri.Products.updatedAt,
                         }
@@ -62,6 +63,9 @@ namespace cloud_backend.Repositories.QuotationRequestRepo
                 .Include(qr => qr.quotationRequestItems)
                 .ThenInclude(qri => qri.Products)
                 .AsQueryable();
+
+            if (request.storeId != Guid.Empty)
+                query = query.Where(c => c.storeId == request.storeId);
 
             if (request.status.HasValue)
                 query = query.Where(c => c.status == request.status.Value);
@@ -109,6 +113,7 @@ namespace cloud_backend.Repositories.QuotationRequestRepo
                             category = qri.Products.category,
                             isActive = qri.Products.isActive,
                             discountPercentage = qri.Products.discountPercentage,
+                            imageUrl = qri.Products.imageUrl,
                             createdAt = qri.Products.createdAt,
                             updatedAt = qri.Products.updatedAt,
                         }
@@ -155,6 +160,7 @@ namespace cloud_backend.Repositories.QuotationRequestRepo
                             category = qri.Products.category,
                             isActive = qri.Products.isActive,
                             discountPercentage = qri.Products.discountPercentage,
+                            imageUrl = qri.Products.imageUrl,
                             createdAt = qri.Products.createdAt,
                             updatedAt = qri.Products.updatedAt,
                         }

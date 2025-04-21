@@ -90,16 +90,13 @@ namespace cloud_backend.Controllers
         {
             var today = DateTime.UtcNow.AddHours(8).Date;
 
-            // Get Monday of the current week
             var startOfWeek = today.AddDays(-(int)today.DayOfWeek + (int)DayOfWeek.Monday);
             var endOfWeek = startOfWeek.AddDays(6);
 
-            // Fetch orders for this week
             var ordersThisWeek = (await _orderRepo.GetAllOrdersDto())
                 .Where(o => o.createdAt.Date >= startOfWeek && o.createdAt.Date <= endOfWeek)
                 .ToList();
 
-            // Fetch manufacturing requests with status == 3 for this week
             var requestsThisWeek = (await _manufacturingRequestRepo.GetManufacturingRequests())
                 .Where(m => m.createdAt.Date >= startOfWeek && m.createdAt.Date <= endOfWeek && m.status == 3)
                 .ToList();
@@ -160,10 +157,8 @@ namespace cloud_backend.Controllers
             DateTime weekStart = today.AddDays(-1 * diff).Date;
             DateTime weekEnd = weekStart.AddDays(7).Date;
 
-            // 2. Fetch orders in current week
             var orders = await _orderRepo.GetDailyOrders();
 
-            // 3. Group orders by date
             var groupedOrders = orders
                 .GroupBy(o => o.createdAt.Date)
                 .ToDictionary(
@@ -232,7 +227,6 @@ namespace cloud_backend.Controllers
         {
             var currentYear = DateTime.Today.Year;
 
-            // Fetch all the customers, staff, stores, and admins for the current year
             var customers = (await _customerRepo.GetAllCustomers())
                 .Where(c => c.createdAt.Year == currentYear && (c.isVerified ?? false))
                 .ToList();
@@ -258,7 +252,6 @@ namespace cloud_backend.Controllers
             {
                 var monthNumber = index + 1;
 
-                // Filter the users based on the month
                 var customersInMonth = customers
                     .Where(u => u.createdAt.Month == monthNumber);
 

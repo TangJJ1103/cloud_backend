@@ -16,7 +16,6 @@ namespace cloud_backend.Controllers
             _customerRepository = customerRepository;
         }
 
-        // ✅ GET: email/verifyEmail
         [HttpGet("verifyEmail")]
         public async Task<IActionResult> VerifyEmail(string token)
         {

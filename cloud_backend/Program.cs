@@ -33,10 +33,10 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowReactApp", policy =>
     {
-        policy.WithOrigins("http://localhost:3000")  // Explicitly allow frontend
+        policy.WithOrigins("http://ddac-assignment-g16.vercel.app", "http://localhost:3000")
               .AllowAnyHeader()
               .AllowAnyMethod()
-              .AllowCredentials();  // Allow credentials if using cookies or authentication
+              .AllowCredentials();
     });
 });
 
@@ -56,7 +56,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
             ValidIssuer = jwtSettings["Issuer"],
-            ValidAudience = jwtSettings["Audience"],
+            ValidAudiences = jwtSettings.GetSection("Audiences").Get<string[]>(),
             IssuerSigningKey = new SymmetricSecurityKey(secretKey)
         };
     });
@@ -66,6 +66,7 @@ builder.Services.AddAuthorization();
 builder.Services.AddScoped<EmailService>();
 builder.Services.AddScoped<JwtService>();
 builder.Services.AddScoped<HashService>();
+builder.Services.AddScoped<ImageResizeService>();
 builder.Services.AddScoped<IAuthRepository, AuthRepository>();
 builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
 builder.Services.AddScoped<IManufacturingRepository, ManufacturingRepository>();

@@ -16,9 +16,9 @@ namespace cloud_backend.Services
             _settings = settings.Value;
 
             var credentials = new SessionAWSCredentials(
-                _settings.AccessKey,
-                _settings.SecretKey,
-                _settings.SessionToken
+                Environment.GetEnvironmentVariable("ACCESS_KEY"),
+                Environment.GetEnvironmentVariable("SECRET_KEY"),
+                Environment.GetEnvironmentVariable("SESSION_TOKEN")
             );
 
             var config = new AmazonS3Config
@@ -30,19 +30,22 @@ namespace cloud_backend.Services
 
         }
 
-        public string GeneratePresignedUrl(string extension)
+        public async Task<string> UploadImageToS3Async(Stream imageStream, string contentType, string fileName)
         {
-            var fileName = $"{Guid.NewGuid()}.{extension}";
-            var request = new GetPreSignedUrlRequest
+            var key = $"images/{fileName}";
+
+            var request = new PutObjectRequest
             {
                 BucketName = _settings.BucketName,
-                Key = fileName,
-                Verb = HttpVerb.PUT,
-                Expires = DateTime.UtcNow.AddHours(8).AddMinutes(10),
-                ContentType = $"image/{extension}"
+                Key = key,
+                InputStream = imageStream,
+                ContentType = contentType,
+                AutoCloseStream = true
             };
 
-            return _s3Client.GetPreSignedURL(request);
+            await _s3Client.PutObjectAsync(request);
+
+            return $"https://{_settings.BucketName}.s3.amazonaws.com/{key}";
         }
     }
 }

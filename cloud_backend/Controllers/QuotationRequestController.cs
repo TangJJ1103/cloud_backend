@@ -49,7 +49,6 @@ namespace cloud_backend.Controllers
                 return BadRequest(new { message = "Invalid quotation request." });
             }
 
-            // Validate if store exists and is active
             var store = await _storeRepo.IsStoreActive(request.storeId);
 
             if (!store)
@@ -59,7 +58,6 @@ namespace cloud_backend.Controllers
 
             var quotationRequestId = Guid.NewGuid();
 
-            // Map request items to entity items
             var quotationItems = request.quotationRequestItems.Select(item => new Quotation_Request_Items
             {
                 quotationRequestItemId = Guid.NewGuid(),
@@ -99,7 +97,6 @@ namespace cloud_backend.Controllers
                 return NotFound(new { message = "Quotation request not found." });
             }
 
-            // Update status and timestamp
             quotationRequest.status = request.status;
             quotationRequest.updatedAt = DateTime.UtcNow.AddHours(8);
 

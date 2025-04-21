@@ -19,12 +19,14 @@ namespace cloud_backend.Services
             var jwtSettings = _config.GetSection("JwtSettings");
             var secretKey = Encoding.UTF8.GetBytes(jwtSettings["SecretKey"]);
 
+            var audiences = jwtSettings.GetSection("Audiences").Get<string[]>();
+
             var claims = new[]
             {
                 new Claim(JwtRegisteredClaimNames.Sub, userId.ToString()),
                 new Claim(JwtRegisteredClaimNames.Name, name),
                 new Claim(JwtRegisteredClaimNames.AuthTime, new DateTimeOffset(DateTime.UtcNow.AddHours(8)).ToUnixTimeSeconds().ToString()),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()) // Unique Token ID
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
             };
 
             var key = new SymmetricSecurityKey(secretKey);
@@ -32,7 +34,7 @@ namespace cloud_backend.Services
 
             var token = new JwtSecurityToken(
                 issuer: jwtSettings["Issuer"],
-                audience: jwtSettings["Audience"],
+                audience: audiences[0],
                 claims: claims,
                 expires: DateTime.UtcNow.AddHours(8).AddMinutes(Convert.ToInt32(jwtSettings["ExpiryInMinutes"])),
                 signingCredentials: credentials
@@ -40,6 +42,7 @@ namespace cloud_backend.Services
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
+
     }
 }
 

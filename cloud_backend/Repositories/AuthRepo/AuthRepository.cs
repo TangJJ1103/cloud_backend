@@ -3,6 +3,7 @@ using cloud_backend.Models;
 using cloud_backend.Request;
 using cloud_backend.Services;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Identity.Client.Platforms.Features.DesktopOs.Kerberos;
 
 namespace cloud_backend.Repositories.AuthRepo
 {
@@ -24,7 +25,6 @@ namespace cloud_backend.Repositories.AuthRepo
 
             if (userCredential == null) return null;
 
-            // Correct password verification
             if (userCredential.password != _hashService.HashPassword(credential.password))
                 return null;
 
@@ -40,15 +40,15 @@ namespace cloud_backend.Repositories.AuthRepo
             {
                 case 1:
                 case 2:
-                case 3: // Factory Staff
+                case 3:
                     var factory = await _context.User_Credentials.Include(u => u.Factory_User).FirstOrDefaultAsync(u => u.role == userCredential.role);
                     return factory != null && factory.Factory_User.isActive ? factory: null;
 
-                case 4: // Store
+                case 4:
                     var store = await _context.User_Credentials.Include(u => u.Store_User).FirstOrDefaultAsync(u => u.role == userCredential.role);
                     return store != null && store.Store_User.isActive ? store : null;
 
-                case 5: // Customer
+                case 5:
                     var customer = await _context.User_Credentials.Include(u => u.Customer_User).FirstOrDefaultAsync(u => u.role == userCredential.role);
                     return customer != null && customer.Customer_User.isVerified ? customer : null;
 

@@ -1,7 +1,5 @@
 ﻿using MimeKit;
 using MailKit.Net.Smtp;
-using Microsoft.EntityFrameworkCore;
-using cloud_backend.Data;
 
 namespace cloud_backend.Services
 {

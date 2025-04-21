@@ -26,7 +26,6 @@ namespace cloud_backend.Controllers
             _userCredentialRepository = userCredentialRepository;
         }
 
-        // GET: orders/findAll
         [Authorize]
         [HttpPost("findAll")]
         public async Task<IActionResult> GetAllOrdersPaginated([FromBody] OrderPaginationRequest request)
@@ -35,7 +34,6 @@ namespace cloud_backend.Controllers
             return Ok(orders);
         }
 
-        // GET: orders/findOne/{orderId}
         [Authorize]
         [HttpGet("findOne/{orderId}")]
         public async Task<ActionResult<Orders>> GetOrderById(Guid orderId)
@@ -46,7 +44,6 @@ namespace cloud_backend.Controllers
             return Ok(order);
         }
 
-        // POST: orders/create
         [Authorize]
         [HttpPost("create")]
         public async Task<ActionResult> CreateOrder([FromBody] CreateOrderRequest request)
@@ -69,7 +66,6 @@ namespace cloud_backend.Controllers
             return Ok(new { message = "Order placed successfully." });
         }
 
-        // PATCH: orders/updateStatus/{orderId}
         [Authorize]
         [HttpPatch("updateStatus/{orderId}")]
         public async Task<ActionResult> UpdateOrderStatus(Guid orderId, [FromBody] OrderUpdateRequest request)

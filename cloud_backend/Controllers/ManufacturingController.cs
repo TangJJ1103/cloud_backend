@@ -53,7 +53,6 @@ namespace cloud_backend.Controllers
             return Ok(result);
         }
 
-        //manufacture/create
         [Authorize]
         [HttpPost("create")]
         public async Task<IActionResult> CreateManufacturingRequest([FromBody] CreateManufacturingRequest request)
@@ -63,7 +62,6 @@ namespace cloud_backend.Controllers
                 return BadRequest(new { message = "Invalid manufacturing request." });
             }
 
-            // Retrieve product details
             var product = await _productRepo.GetProductById(request.productId);
 
             if (product == null)
@@ -71,10 +69,8 @@ namespace cloud_backend.Controllers
                 return NotFound(new { message = "Product not found." });
             }
 
-            // Use product cost in the manufacturing request
             double manufacturingCost = product.cost;
 
-            // Create new manufacturing request
             var manufacturingRequest = new Manufacturing_Request
             {
                 requestId = Guid.NewGuid(),
@@ -95,26 +91,22 @@ namespace cloud_backend.Controllers
         [HttpPatch("updateStatus/{requestId}")]
         public async Task<IActionResult> UpdateManufacturingStatus(Guid requestId, [FromBody] UpdateManufacturingRequest newStatus)
         {
-            // Find the manufacturing request
             var request = await _manufactureRepo.GetManufacturingRequest(requestId);
 
             if (request == null)
             {
                 return NotFound(new { message = "Manufacturing request not found." });
             }
-                
-            // Update the status
+
             request.status = newStatus.status;
             request.updatedAt = DateTime.UtcNow.AddHours(8);
 
-            // If status is 3 (Completed), update product stock
             if (newStatus.status == 3 && request.Products != null)
             {
                 request.Products.stockQuantity += request.quantity;
                 _productRepo.UpdateProduct(request.Products);
             }
 
-            // Save changes
             await _manufactureRepo.UpdateManufacturingRequest(request);
 
             return Ok(new { message = "Manufacturing request updated successfully."});

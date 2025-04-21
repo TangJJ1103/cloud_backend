@@ -1,7 +1,5 @@
-﻿using cloud_backend.Repositories.ProductRepo;
-using cloud_backend.Request.Product;
-using cloud_backend.Request.S3;
-using cloud_backend.Services;
+﻿using cloud_backend.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace cloud_backend.Controllers
@@ -11,50 +9,32 @@ namespace cloud_backend.Controllers
     public class S3Controller : ControllerBase
     {
         private readonly S3Service _s3Service;
-        private readonly IProductRepository _productRepo;
+        private readonly ImageResizeService _imageResizeService;
 
-        public S3Controller(S3Service s3Service, IProductRepository productRepository)
+        public S3Controller(ImageResizeService imageResizeService,S3Service s3Service)
         {
+            _imageResizeService = imageResizeService;
             _s3Service = s3Service;
-            _productRepo = productRepository;
         }
 
-        [HttpGet("presignedUrl")]
-        public async Task<ActionResult> GetPresignedUrl([FromQuery] string extension)
+        [Authorize]
+        [HttpPost("uploadImage")]
+        public async Task<ActionResult> UploadImage(IFormFile imageFile)
         {
-            if (extension == "jpg" || extension == "jpeg" || extension == "png" || extension == "svg" || extension == "gif") 
-            { 
-                if(extension == "jpg")
-                {
-                    extension = "jpeg";
-                }
-                var url = _s3Service.GeneratePresignedUrl(extension);
-                return Ok(url);
-            }
-            else
-            {
-                return BadRequest(new { message = "Invalid extension type" });
-            }
-        }
+            if (imageFile == null || imageFile.Length == 0 )
+                return BadRequest(new { message = "Invalid image file." });
 
-        [HttpPost("uploadImage/{productId}")]
-        public async Task<ActionResult> UploadImage(Guid productId, [FromBody] ProductUpdateRequest request)
-        {
-            if (string.IsNullOrEmpty(request.imageUrl) || productId == Guid.Empty)
-            {
-                return BadRequest(new { message = "Url or productId not found"});
-            }
-            var existingProduct = await _productRepo.GetProductById(productId);
-            if (existingProduct != null)
-            {
-                return BadRequest(new { message = "Product not found" });
-            }
+            using var inputStream = imageFile.OpenReadStream();
+            var fileExtension = Path.GetExtension(imageFile.FileName);
 
-            existingProduct.imageUrl = request.imageUrl.Split("?")[0];
+            using var resizedImage = await _imageResizeService.CompressImageAsync(inputStream, fileExtension);
 
-            await _productRepo.UpdateProduct(existingProduct);
-            
-            return Ok();
+            var fileName = $"{Guid.NewGuid()}{fileExtension}";
+            var contentType = imageFile.ContentType;
+
+            var imageUrl = await _s3Service.UploadImageToS3Async(resizedImage, contentType, fileName);
+
+            return Ok(new { imageUrl });
         }
     }
 

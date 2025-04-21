@@ -13,6 +13,7 @@ namespace cloud_backend.Dto
         public DateTime? updatedAt { get; set; }
         public DateTime? fulfilledAt { get; set; }
         public int status { get; set; }
+        public GetReceiptOnlyDto receipt { get; set; }
         public ICollection<GetOrderItemsDto> orderItems { get; set; }
     }
 }

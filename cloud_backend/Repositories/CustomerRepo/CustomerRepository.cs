@@ -27,6 +27,7 @@ namespace cloud_backend.Repositories.CustomerRepo
                     contactNumber = c.User_Credential.contactNumber,
                     address = c.address,
                     createdAt = c.createdAt,
+                    updatedAt = c.updatedAt,
                     isVerified = c.isVerified
                 })
                 .ToListAsync();
@@ -38,11 +39,9 @@ namespace cloud_backend.Repositories.CustomerRepo
             .Include(c => c.User_Credential)
             .AsQueryable();
 
-            // Filtering
             if (request.isVerified.HasValue)
                 query = query.Where(c => c.isVerified == request.isVerified.Value);
 
-            // Search (e.g., by name or email)
             if (!string.IsNullOrWhiteSpace(request.searchTerm))
             {
                 string term = request.searchTerm.ToLower();
@@ -53,10 +52,8 @@ namespace cloud_backend.Repositories.CustomerRepo
                     c.customerId.ToString().ToLower().Contains(term));
             }
 
-            // Total count for pagination
             var totalCount = await query.CountAsync();
 
-            // Apply pagination
             var data = await query
                 .OrderByDescending(c => c.createdAt)
                 .Skip(request.currentIndex)
@@ -70,6 +67,7 @@ namespace cloud_backend.Repositories.CustomerRepo
                     contactNumber = c.User_Credential.contactNumber,
                     address = c.address,
                     createdAt = c.createdAt,
+                    updatedAt = c.updatedAt,
                     isVerified = c.isVerified
                 })
                 .ToListAsync();
@@ -94,6 +92,8 @@ namespace cloud_backend.Repositories.CustomerRepo
                     email = c.User_Credential.email,
                     contactNumber = c.User_Credential.contactNumber,
                     address = c.address,
+                    createdAt = c.createdAt,
+                    updatedAt = c.updatedAt,
                     isVerified = c.isVerified
                 })
                 .FirstOrDefaultAsync();
@@ -112,6 +112,8 @@ namespace cloud_backend.Repositories.CustomerRepo
                     email = c.User_Credential.email,
                     contactNumber = c.User_Credential.contactNumber,
                     address = c.address,
+                    createdAt = c.createdAt,
+                    updatedAt = c.updatedAt,
                     isVerified = c.isVerified
                 })
                 .FirstOrDefaultAsync();
@@ -136,7 +138,7 @@ namespace cloud_backend.Repositories.CustomerRepo
                 .FirstOrDefaultAsync();
 
             if (existingCredential != null)
-                return false; // You can handle error messages in the controller
+                return false;
 
             if (!string.IsNullOrEmpty(request.username))
                 credentials.username = request.username;

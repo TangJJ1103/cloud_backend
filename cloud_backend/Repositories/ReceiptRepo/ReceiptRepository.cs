@@ -4,6 +4,7 @@ using cloud_backend.Models;
 using cloud_backend.Request.Customer;
 using cloud_backend.Request.Receipts;
 using Microsoft.EntityFrameworkCore;
+using System;
 
 namespace cloud_backend.Repositories.ReceiptRepo
 {
@@ -61,6 +62,7 @@ namespace cloud_backend.Repositories.ReceiptRepo
                             category = oi.Product.category,
                             isActive = oi.Product.isActive,
                             discountPercentage = oi.Product.discountPercentage,
+                            imageUrl = oi.Product.imageUrl,
                             createdAt = oi.Product.createdAt,
                             updatedAt = oi.Product.updatedAt,
                         }
@@ -76,6 +78,9 @@ namespace cloud_backend.Repositories.ReceiptRepo
             .ThenInclude(r => r.OrderItems)
             .ThenInclude(oi => oi.Product)
             .AsQueryable();
+
+            if(request.credentialId != Guid.Empty)
+                query = query.Where(c => c.credentialId == request.credentialId);
 
             // Filtering
             if (request.paymentMethod.HasValue)
@@ -139,6 +144,7 @@ namespace cloud_backend.Repositories.ReceiptRepo
                                 category = oi.Product.category,
                                 isActive = oi.Product.isActive,
                                 discountPercentage = oi.Product.discountPercentage,
+                                imageUrl = oi.Product.imageUrl,
                                 createdAt = oi.Product.createdAt,
                                 updatedAt = oi.Product.updatedAt,
                             }
@@ -198,6 +204,7 @@ namespace cloud_backend.Repositories.ReceiptRepo
                             category = oi.Product.category,
                             isActive = oi.Product.isActive,
                             discountPercentage = oi.Product.discountPercentage,
+                            imageUrl = oi.Product.imageUrl,
                             createdAt = oi.Product.createdAt,
                             updatedAt = oi.Product.updatedAt,
                         }

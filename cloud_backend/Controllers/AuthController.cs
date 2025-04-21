@@ -3,6 +3,7 @@ using cloud_backend.Data;
 using cloud_backend.Services;
 using cloud_backend.Request;
 using cloud_backend.Repositories.AuthRepo;
+using cloud_backend.Request.Customer;
 
 namespace cloud_backend.Controllers
 {
@@ -12,14 +13,15 @@ namespace cloud_backend.Controllers
     {
         private readonly IAuthRepository _authRepository;
         private readonly JwtService _jwtService;
+        private readonly EmailService _emailService;
 
-        public AuthController(IAuthRepository authRepository, JwtService jwtService)
+        public AuthController(IAuthRepository authRepository, JwtService jwtService, EmailService emailService)
         {
             _authRepository = authRepository;
             _jwtService = jwtService;
+            _emailService = emailService;
         }
 
-        // POST: auth/login
         [HttpPost("login")]
         public async Task<IActionResult> LoginAuth([FromBody] CredentialRequest credential)
         {

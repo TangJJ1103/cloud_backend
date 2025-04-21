@@ -72,6 +72,7 @@ namespace cloud_backend.Controllers
             product.model = updatedProduct.model ?? product.model;
             product.isActive = updatedProduct.isActive ?? product.isActive;
             product.discountPercentage = updatedProduct.discountPercentage ?? product.discountPercentage;
+            product.imageUrl = updatedProduct.imageUrl ?? product.imageUrl;
 
             await _productRepository.UpdateProduct(product);
 

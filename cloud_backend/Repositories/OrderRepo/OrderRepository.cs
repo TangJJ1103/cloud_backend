@@ -23,6 +23,7 @@ namespace cloud_backend.Repositories.OrderRepo
         public async Task<IEnumerable<GetOrdersDto?>> GetAllOrdersDto()
         {
             return await _context.Orders
+                .Include(o => o.Receipts)
                 .Include(o => o.OrderItems)
                     .ThenInclude(oi => oi.Product)
                 .Select(o => new GetOrdersDto
@@ -36,6 +37,15 @@ namespace cloud_backend.Repositories.OrderRepo
                     updatedAt = o.updatedAt,
                     fulfilledAt = o.fulfilledAt,
                     status = o.status,
+                    receipt = new GetReceiptOnlyDto
+                    {
+                        receiptId = o.Receipts.receiptId,
+                        credentialId = o.Receipts.credentialId,
+                        amount = o.Receipts.amount,
+                        paymentMethod = o.Receipts.paymentMethod,
+                        paymentType = o.Receipts.paymentType,
+                        createdAt = o.Receipts.createdAt
+                    },
                     orderItems = o.OrderItems.Select(oi => new GetOrderItemsDto
                     {
                         orderItemId = oi.orderItemId,
@@ -57,6 +67,7 @@ namespace cloud_backend.Repositories.OrderRepo
                             isActive = oi.Product.isActive,
                             discountPercentage = oi.Product.discountPercentage,
                             soldQuantity = oi.Product.soldQuantity,
+                            imageUrl = oi.Product.imageUrl,
                             createdAt = oi.Product.createdAt,
                             updatedAt = oi.Product.updatedAt,
                         }
@@ -68,10 +79,14 @@ namespace cloud_backend.Repositories.OrderRepo
         public async Task<GetPaginatedDto<GetOrdersDto>> GetAllOrdersDtoPaginated(OrderPaginationRequest request)
         {
             var query = _context.Orders
+            .Include(o => o.Receipts)
             .Include(c => c.OrderItems)
             .AsQueryable();
 
-            if(request.status.HasValue)
+            if (request.credentialId != Guid.Empty)
+                query = query.Where(c => c.credentialId == request.credentialId);
+
+            if (request.status.HasValue)
                 query = query.Where(c => c.status == request.status);
 
             if (!string.IsNullOrWhiteSpace(request.searchTerm))
@@ -98,6 +113,15 @@ namespace cloud_backend.Repositories.OrderRepo
                     updatedAt = o.updatedAt,
                     fulfilledAt = o.fulfilledAt,
                     status = o.status,
+                    receipt = new GetReceiptOnlyDto
+                    {
+                        receiptId = o.Receipts.receiptId,
+                        credentialId = o.Receipts.credentialId,
+                        amount = o.Receipts.amount,
+                        paymentMethod = o.Receipts.paymentMethod,
+                        paymentType = o.Receipts.paymentType,
+                        createdAt = o.Receipts.createdAt
+                    },
                     orderItems = o.OrderItems.Select(oi => new GetOrderItemsDto
                     {
                         orderItemId = oi.orderItemId,
@@ -119,6 +143,7 @@ namespace cloud_backend.Repositories.OrderRepo
                             isActive = oi.Product.isActive,
                             discountPercentage = oi.Product.discountPercentage,
                             soldQuantity = oi.Product.soldQuantity,
+                            imageUrl = oi.Product.imageUrl,
                             createdAt = oi.Product.createdAt,
                             updatedAt = oi.Product.updatedAt,
                         }
@@ -137,6 +162,7 @@ namespace cloud_backend.Repositories.OrderRepo
         {
             return await _context.Orders
                 .Where(o => o.credentialId == credentialId)
+                .Include(o => o.Receipts)
                 .Include(o => o.OrderItems)
                     .ThenInclude(oi => oi.Product)
                 .Select(o => new GetOrdersDto
@@ -150,6 +176,15 @@ namespace cloud_backend.Repositories.OrderRepo
                     updatedAt = o.updatedAt,
                     fulfilledAt = o.fulfilledAt,
                     status = o.status,
+                    receipt = new GetReceiptOnlyDto
+                    {
+                        receiptId = o.Receipts.receiptId,
+                        credentialId = o.Receipts.credentialId,
+                        amount = o.Receipts.amount,
+                        paymentMethod = o.Receipts.paymentMethod,
+                        paymentType = o.Receipts.paymentType,
+                        createdAt = o.Receipts.createdAt
+                    },
                     orderItems = o.OrderItems.Select(oi => new GetOrderItemsDto
                     {
                         orderItemId = oi.orderItemId,
@@ -171,6 +206,7 @@ namespace cloud_backend.Repositories.OrderRepo
                             isActive = oi.Product.isActive,
                             discountPercentage = oi.Product.discountPercentage,
                             soldQuantity = oi.Product.soldQuantity,
+                            imageUrl = oi.Product.imageUrl,
                             createdAt = oi.Product.createdAt,
                             updatedAt = oi.Product.updatedAt,
                         }
@@ -183,6 +219,7 @@ namespace cloud_backend.Repositories.OrderRepo
         {
             return await _context.Orders
                 .Where(o => o.orderId == orderId)
+                .Include(o => o.Receipts)
                 .Include(o => o.OrderItems)
                     .ThenInclude(oi => oi.Product)
                 .Select(o => new GetOrdersDto
@@ -196,6 +233,15 @@ namespace cloud_backend.Repositories.OrderRepo
                     updatedAt = o.updatedAt,
                     fulfilledAt = o.fulfilledAt,
                     status = o.status,
+                    receipt = new GetReceiptOnlyDto
+                    {
+                        receiptId = o.Receipts.receiptId,
+                        credentialId = o.Receipts.credentialId,
+                        amount = o.Receipts.amount,
+                        paymentMethod = o.Receipts.paymentMethod,
+                        paymentType = o.Receipts.paymentType,
+                        createdAt = o.Receipts.createdAt
+                    },
                     orderItems = o.OrderItems.Select(oi => new GetOrderItemsDto
                     {
                         orderItemId = oi.orderItemId,
@@ -217,6 +263,7 @@ namespace cloud_backend.Repositories.OrderRepo
                             isActive = oi.Product.isActive,
                             discountPercentage = oi.Product.discountPercentage,
                             soldQuantity = oi.Product.soldQuantity,
+                            imageUrl = oi.Product.imageUrl,
                             createdAt = oi.Product.createdAt,
                             updatedAt = oi.Product.updatedAt,
                         }
@@ -247,7 +294,6 @@ namespace cloud_backend.Repositories.OrderRepo
 
         public async Task<bool> CreateOrderAsync(CreateOrderRequest request)
         {
-            // Validate product availability
             double totalAmount = 0;
             int totalQuantity = 0;
 
@@ -313,7 +359,7 @@ namespace cloud_backend.Repositories.OrderRepo
             order.status = status;
             order.updatedAt = DateTime.UtcNow.AddHours(8);
 
-            if (status == 3) // Fulfilled
+            if (status == 3)
             {
                 order.fulfilledAt = DateTime.UtcNow.AddHours(8);
 
@@ -329,7 +375,7 @@ namespace cloud_backend.Repositories.OrderRepo
                 }
 
             }
-            else if (status == 4) // Cancelled -> Restore stock
+            else if (status == 4)
             {
                 foreach (var item in order.OrderItems)
                 {

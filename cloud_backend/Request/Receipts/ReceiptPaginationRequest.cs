@@ -7,5 +7,6 @@
         public int? paymentMethod { get; set; }
         public int? paymentType { get; set; }
         public string? searchTerm { get; set; }
+        public Guid? credentialId { get; set; }
     }
 }

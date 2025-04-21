@@ -52,7 +52,6 @@ namespace cloud_backend.Controllers
                 return BadRequest(new { message = "Invalid quotation." });
             }
 
-            // Validate if store exists and is active
             var store = await _storeRepo.IsStoreActive(request.storeId);
 
             if (!store)
@@ -60,7 +59,6 @@ namespace cloud_backend.Controllers
                 return BadRequest(new { message = "Invalid or inactive store." });
             }
 
-            // Calculate totalAmount and totalQuantity
             double totalAmount = 0;
             int totalQuantity = 0;
 
@@ -72,7 +70,6 @@ namespace cloud_backend.Controllers
                 totalAmount += discountedPrice * item.quantity;
             }
 
-            // Create new Quotation
             var quotation = new Quotations
             {
                 quotationId = Guid.NewGuid(),
@@ -86,7 +83,6 @@ namespace cloud_backend.Controllers
                 quotationItems = new List<Quotation_Items>()
             };
 
-            // Validate products and add items
             foreach (var item in request.quotationItems)
             {
                 var product = await _productRepo.GetProductById(item.productId);
@@ -127,7 +123,6 @@ namespace cloud_backend.Controllers
                 return NotFound(new { message = "Quotation not found." });
             }
 
-            // Update status and timestamp
             quotation.status = request.status;
             quotation.updatedAt = DateTime.UtcNow.AddHours(8);
 
