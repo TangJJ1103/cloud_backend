@@ -33,7 +33,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowReactApp", policy =>
     {
-        policy.WithOrigins("http://ddac-assignment-g16.vercel.app", "http://localhost:3000")
+        policy.WithOrigins("http://ddac-assignment-g16.vercel.app", "https://ddac-assignment-g16.vercel.app", "http://localhost:3000")
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
